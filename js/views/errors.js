@@ -3,6 +3,7 @@ import { METHODS, QMAP } from '../data.js';
 import { regenerate } from '../gen/generators.js';
 import { esc, fmtDate, boxDots } from '../ui.js';
 import { allErrors, dueErrors, removeError, BOX_DAYS } from '../store.js';
+import { preselectForPrint } from './print.js';
 
 export function renderErrors(el) {
   const due = dueErrors();
@@ -14,7 +15,10 @@ export function renderErrors(el) {
     <div class="card due-card">
       <h3>⏰ 今天到期的复习:${due.length} 道</h3>
       <p>每道错题会生成一道<b>同类新题</b>来检验。答对升一级,连闯 ${BOX_DAYS.length} 关(隔 ${BOX_DAYS.join('、')} 天)就算彻底掌握;答错则重新开始。</p>
-      <a class="btn btn-big btn-alert" href="#/drill/review">🔁 开始复习(${due.length} 道)</a>
+      <div class="model-actions">
+        <a class="btn btn-big btn-alert" href="#/drill/review">🔁 开始复习(${due.length} 道)</a>
+        <button class="btn btn-big" id="print-due">🖨 打印这批错题(可附变式)</button>
+      </div>
     </div>` : `
     <div class="card due-card">
       <h3>😌 今天没有到期的复习</h3>
@@ -31,6 +35,10 @@ export function renderErrors(el) {
     ${mastered.length ? `<h2 class="sec-title">🏆 已彻底掌握</h2><div class="error-list">${mastered.map(row).join('')}</div>` : ''}
   </div>`;
 
+  el.querySelector('#print-due')?.addEventListener('click', () => {
+    preselectForPrint(due.map(e => e.qid));
+    location.hash = '#/print';
+  });
   el.querySelectorAll('[data-remove]').forEach(b => b.addEventListener('click', () => {
     if (confirm('确定把这道错题移出错题本吗?')) {
       removeError(b.dataset.remove);

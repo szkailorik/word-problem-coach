@@ -51,6 +51,8 @@ export function renderHome(el) {
       ${t.due ? `<a class="btn btn-big btn-alert" href="#/drill/review">🔁 错题复习（${t.due} 道到期）</a>` : ''}
       <a class="btn btn-big" href="#/bank">📚 SAP 101 题库</a>
       <a class="btn btn-big" href="#/errors">📕 错题本</a>
+      <a class="btn btn-big" href="#/log">📅 训练档案</a>
+      <a class="btn btn-big" href="#/print">🖨 打印中心</a>
     </div>
   </div>
   ${familyBlocks}`;
