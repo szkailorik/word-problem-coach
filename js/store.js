@@ -3,6 +3,9 @@
 
 const KEY = 'wpc_state_v1';
 const DAY = 24 * 60 * 60 * 1000;
+// node 测试环境没有 localStorage,用内存兜底
+const LS = typeof localStorage !== 'undefined' ? localStorage
+  : { _m: {}, getItem(k) { return this._m[k] ?? null; }, setItem(k, v) { this._m[k] = v; }, removeItem(k) { delete this._m[k]; } };
 // 莱特纳盒:第 n 盒答对后间隔天数;走完全部盒子 = 彻底掌握
 export const BOX_DAYS = [1, 3, 7, 14];
 
@@ -17,7 +20,7 @@ function emptyProfile() {
 
 function load() {
   try {
-    const s = JSON.parse(localStorage.getItem(KEY));
+    const s = JSON.parse(LS.getItem(KEY));
     if (s && s.students) return s;
   } catch (e) { /* fresh start */ }
   return {
@@ -34,7 +37,9 @@ export function save() {
   // 练习日志封顶,防止 localStorage 膨胀
   const p = profile();
   if (p.attempts.length > 2000) p.attempts = p.attempts.slice(-1500);
-  localStorage.setItem(KEY, JSON.stringify(state));
+  LS.setItem(KEY, JSON.stringify(state));
+  // 通知云同步(若已连接则防抖推送)
+  try { window.dispatchEvent(new Event('wpc:saved')); } catch (e) { /* node 测试环境无 window */ }
 }
 
 export function profile() {

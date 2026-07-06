@@ -3,7 +3,7 @@
 //   #/drill/<tag>   无限刷某个模型(可切难度)
 //   #/drill/daily   每日特训:到期错题变式 + 薄弱模型新题,共 6 题
 //   #/drill/review  错题复习:全部到期错题,每道配一道同类变式
-import { generate, regenerate } from '../gen/generators.js';
+import { generate, regenerate, GENERATORS } from '../gen/generators.js';
 import { METHODS, QMAP, TAG_LIST, familyOf } from '../data.js';
 import { esc, famClass, stemHTML, stepsHTML } from '../ui.js';
 import { state, recordAttempt, addError, reviewResult, dueErrors, nextSeed, tagStats, weakestTags, profile } from '../store.js';
@@ -24,7 +24,7 @@ function buildPlaylist(mode, param) {
   if (mode === 'daily') {
     const items = dueErrors().slice(0, 3).map(e => ({ kind: 'review', error: e }));
     const fill = 6 - items.length;
-    const weak = weakestTags(TAG_LIST, 3);
+    const weak = weakestTags(TAG_LIST.filter(t => GENERATORS[t]), 3);
     for (let i = 0; i < fill; i++) {
       const tag = weak[i % weak.length];
       items.push(makeGenItem(tag, levelForTag(tag)));
@@ -42,6 +42,10 @@ function buildPlaylist(mode, param) {
 }
 
 export function renderDrill(el, mode, param) {
+  if (mode !== 'daily' && mode !== 'review' && !GENERATORS[mode]) {
+    el.innerHTML = `<div class="card empty-card"><h2>这一类没有出题机</h2><p>基础综合是直接列式的计算题,去题库按顺序练即可。</p><div class="model-actions"><a class="btn btn-primary" href="#/bank?tag=${mode}">📚 去题库练</a><a class="btn" href="#/">返回首页</a></div></div>`;
+    return;
+  }
   const pl = buildPlaylist(mode, param);
   const session = { idx: 0, results: [], streak: 0, level: pl.finite ? null : levelForTag(mode) };
 
@@ -64,9 +68,16 @@ export function renderDrill(el, mode, param) {
     let q, origin = null;
     if (item.kind === 'review') {
       const e = item.error;
-      q = generate(e.tag, e.level || 1, nextSeed(e.tag));
       const orig = QMAP.get(e.qid) || regenerate(e.qid);
-      origin = { error: e, orig };
+      if (GENERATORS[e.tag]) {
+        q = generate(e.tag, e.level || 1, nextSeed(e.tag));
+        origin = { error: e, orig };
+      } else {
+        // 基础综合等无生成器的类型:重做原题,自评对错
+        q = orig;
+        origin = { error: e, orig: null, selfGrade: true };
+      }
+      if (!q) { session.idx++; return next(); }
     } else {
       q = generate(item.tag, item.level, item.seed);
     }
@@ -91,10 +102,24 @@ export function renderDrill(el, mode, param) {
         难度:
         ${[1, 2, 3].map(l => `<button class="chip ${session.level === l ? 'chip-on' : ''}" data-level="${l}">${'⭐'.repeat(l)}</button>`).join('')}
       </div>` : ''}
-      ${origin ? `<div class="origin-note">🔁 这是错题「${esc(originLabel(origin))}」的同类变式 · 已闯 ${origin.error.box}/4 关</div>` : ''}
+      ${origin ? `<div class="origin-note">🔁 ${origin.selfGrade ? '这道基础计算错题到期了,重做一遍原题' : `这是错题「${esc(originLabel(origin))}」的同类变式`} · 已闯 ${origin.error.box}/4 关</div>` : ''}
       <div class="card q-card">
         <div class="q-tag">${esc(m.name)}</div>
         ${stemHTML(q)}
+        ${origin && origin.selfGrade ? `
+        <p class="paper-note">✍️ 在草稿纸上完整做一遍,再对答案。</p>
+        <div class="model-actions"><button class="btn btn-primary" id="reveal">做完了,看讲解 →</button></div>
+        <div id="feedback"></div>
+        <div id="solution" class="hidden">
+          <h3>📖 逐步讲解</h3>
+          ${stepsHTML(q.steps || [])}
+          ${q.answer ? `<div class="answer-card">📌 ${esc(q.answer.sentence)}</div>` : (q.model && q.model.text ? `<div class="answer-card">🧮 ${esc(q.model.text)}</div>` : '')}
+          <div class="grade-row">
+            <span>你做对了吗?</span>
+            <button class="btn btn-right" id="gright">✅ 做对了</button>
+            <button class="btn btn-wrong" id="gwrong">❌ 做错了</button>
+          </div>
+        </div>` : `
         <div class="answer-row">
           <label>答案:</label>
           <input type="number" inputmode="numeric" id="ans" placeholder="?" autocomplete="off">
@@ -112,7 +137,7 @@ export function renderDrill(el, mode, param) {
           <h3>📖 逐步讲解</h3>
           ${stepsHTML(q.steps)}
           <div class="answer-card">📌 ${esc(q.answer.sentence)}</div>
-        </div>
+        </div>`}
         <div id="nextrow" class="hidden">
           <button class="btn btn-big btn-primary" id="nextbtn">下一题 →</button>
         </div>
@@ -120,6 +145,15 @@ export function renderDrill(el, mode, param) {
     </div>`;
 
     const $ = id => el.querySelector('#' + id);
+    if (origin && origin.selfGrade) {
+      $('reveal').addEventListener('click', () => {
+        $('solution').classList.remove('hidden');
+        $('reveal').disabled = true;
+      });
+      $('gright').addEventListener('click', () => finish(true, false));
+      $('gwrong').addEventListener('click', () => finish(false, true));
+      return; // 自评模式不需要下面的输入判分逻辑
+    }
     const input = $('ans');
     input.focus();
 
@@ -164,20 +198,21 @@ export function renderDrill(el, mode, param) {
     function finish(correct, gaveUp) {
       if (done) return;
       done = true;
-      input.disabled = true;
-      $('submit').disabled = true; $('hint1').disabled = true; $('hint2').disabled = true; $('giveup').disabled = true;
+      const sg = !!(origin && origin.selfGrade);
+      for (const id of sg ? ['gright', 'gwrong'] : ['submit', 'hint1', 'hint2', 'giveup']) { const b = $(id); if (b) b.disabled = true; }
+      if (!sg && $('ans')) $('ans').disabled = true;
 
       if (correct) {
         session.streak++;
-        $('feedback').innerHTML = `<div class="fb fb-right">✅ 答对了!${esc(q.answer.sentence)}${hintsUsed ? '(用了提示也很棒)' : ' 干净利落!'}</div>`;
+        $('feedback').innerHTML = `<div class="fb fb-right">✅ ${sg ? '很好,这道错题闯过一关!' : `答对了!${esc(q.answer.sentence)}${hintsUsed ? '(用了提示也很棒)' : ' 干净利落!'}`}</div>`;
       } else {
         session.streak = 0;
-        $('feedback').innerHTML = `<div class="fb fb-wrong">${gaveUp ? '没关系,先看懂讲解 👇' : `❌ 正确答案是 <b>${q.answer.value}${esc(q.answer.unit || '')}</b>,看讲解找找卡点 👇`}</div>`;
+        $('feedback').innerHTML = `<div class="fb fb-wrong">${sg ? '没关系,重新回到第一关,过几天再来。' : gaveUp ? '没关系,先看懂讲解 👇' : `❌ 正确答案是 <b>${q.answer.value}${esc(q.answer.unit || '')}</b>,看讲解找找卡点 👇`}</div>`;
         $('solution').classList.remove('hidden');
       }
 
       // 记录
-      recordAttempt({ qid: q.id, tag: q.tag, correct, mode: origin ? 'review' : (pl.finite ? 'daily' : 'drill'), level: q.level });
+      recordAttempt({ qid: q.id, tag: q.tag, correct, mode: origin ? 'review' : (pl.finite ? 'daily' : 'drill'), level: q.level || (origin && origin.error.level) || 1 });
       if (origin) {
         reviewResult(origin.error.qid, correct);
       } else if (!correct) {
@@ -191,8 +226,8 @@ export function renderDrill(el, mode, param) {
       if (pl.finite && session.idx >= pl.items.length) nb.textContent = '看成绩单 🏁';
       nb.addEventListener('click', next);
       nb.focus();
-      // 答对也可以翻讲解
-      if (correct) {
+      // 答对也可以翻讲解(自评模式讲解已经展开,不需要)
+      if (correct && !sg) {
         $('nextrow').insertAdjacentHTML('beforebegin', `<button class="btn btn-sm btn-ghost" id="peek">📖 看看标准讲解</button>`);
         $('peek').addEventListener('click', () => { $('solution').classList.remove('hidden'); $('peek').remove(); });
       }

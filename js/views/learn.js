@@ -1,5 +1,6 @@
 // 模型学堂:绘本记忆 + 信号/避坑 + 三阶名师例题(逐步展开精讲) + 讲完即测
 import { METHODS, EXAMPLES, familyOf, bankQuestionsByTag } from '../data.js';
+import { GENERATORS } from '../gen/generators.js';
 import { esc, famClass, stemHTML } from '../ui.js';
 import { state } from '../store.js';
 
@@ -17,7 +18,7 @@ export function renderLearn(el, tag) {
   <div class="learn ${famClass(fam.id)}">
     <a class="crumb" href="#/">← 返回地图</a>
     <div class="learn-head card">
-      <img class="learn-img" src="${m.img}" alt="${esc(m.name)}">
+      ${m.img ? `<img class="learn-img" src="${m.img}" alt="${esc(m.name)}">` : ''}
       <div>
         <div class="family-badge">${esc(fam.name)} · ${esc(fam.headline)}</div>
         <h1>${esc(m.name)}</h1>
@@ -38,15 +39,15 @@ export function renderLearn(el, tag) {
       </div>
     </div>
 
-    <h2 class="sec-title">🎓 名师三阶例题 <span class="sec-sub">标杆题立模型 → 迁移题换情境 → 压轴题加干扰</span></h2>
-    <div class="examples">${exampleCards}</div>
+    ${examples.length ? `<h2 class="sec-title">🎓 名师三阶例题 <span class="sec-sub">标杆题立模型 → 迁移题换情境 → 压轴题加干扰</span></h2>
+    <div class="examples">${exampleCards}</div>` : ''}
 
     <div class="card learn-cta">
-      <h3>✅ 讲完即测</h3>
-      <p>三道例题走完，马上做几道同类新题,检验是不是真的会了。做错会自动进错题本。</p>
+      <h3>✅ ${GENERATORS[tag] ? '讲完即测' : '去题库练习'}</h3>
+      <p>${GENERATORS[tag] ? '三道例题走完，马上做几道同类新题,检验是不是真的会了。做错会自动进错题本。' : '这一类是直接列式的计算题,不用背模型,去题库按顺序练就行。'}</p>
       <div class="model-actions">
-        <a class="btn btn-primary" href="#/drill/${tag}">✏️ 来几道同类题</a>
-        ${bankCount ? `<a class="btn" href="#/bank?tag=${tag}">📚 题库真题 ${bankCount} 道</a>` : ''}
+        ${GENERATORS[tag] ? `<a class="btn btn-primary" href="#/drill/${tag}">✏️ 来几道同类题</a>` : ''}
+        ${bankCount ? `<a class="btn ${GENERATORS[tag] ? '' : 'btn-primary'}" href="#/bank?tag=${tag}">📚 题库真题 ${bankCount} 道</a>` : ''}
       </div>
     </div>
   </div>`;

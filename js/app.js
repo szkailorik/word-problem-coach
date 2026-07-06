@@ -1,6 +1,7 @@
 // 应用入口:加载数据 → hash 路由 → 顶栏(学生切换/语言/备份)
 import { loadData } from './data.js';
 import { state, setStudent, setLang, exportJSON, importJSON, totals } from './store.js';
+import { sync, isConnected, connect, disconnect, syncNow, initSync } from './sync.js';
 import { renderHome } from './views/home.js';
 import { renderLearn } from './views/learn.js';
 import { renderDrill } from './views/drill.js';
@@ -46,7 +47,7 @@ function renderTopbar() {
         <option value="zh" ${state.lang === 'zh' ? 'selected' : ''}>中文</option>
         <option value="en" ${state.lang === 'en' ? 'selected' : ''}>EN</option>
       </select>
-      <button class="chip" id="backup" title="备份/恢复">💾</button>
+      <button class="chip" id="syncbtn" title="云同步与备份">${syncBadge()}</button>
     </div>`;
 
   bar.querySelectorAll('[data-student]').forEach(b => b.addEventListener('click', () => {
@@ -54,26 +55,103 @@ function renderTopbar() {
     route();
   }));
   bar.querySelector('#langsel').addEventListener('change', e => { setLang(e.target.value); route(); });
-  bar.querySelector('#backup').addEventListener('click', backupDialog);
+  bar.querySelector('#syncbtn').addEventListener('click', openSyncModal);
 }
 
-function backupDialog() {
-  const choice = prompt('输入 1 导出备份(复制弹出的文本);输入 2 粘贴备份内容进行恢复:', '1');
-  if (choice === '1') {
-    const data = exportJSON();
-    navigator.clipboard?.writeText(data).catch(() => {});
-    prompt('已尝试复制到剪贴板。也可手动复制下面内容保存:', data);
-  } else if (choice === '2') {
-    const text = prompt('把之前导出的备份粘贴到这里:');
+function syncBadge() {
+  if (!isConnected()) return '💾 本地';
+  return { syncing: '☁️ 同步中…', ok: '☁️ 已同步', error: '⚠️ 同步异常', local: '☁️' }[sync.status] || '☁️';
+}
+
+function refreshSyncBadge() {
+  const b = document.getElementById('syncbtn');
+  if (b) b.innerHTML = syncBadge();
+}
+
+function openSyncModal() {
+  document.getElementById('syncmodal')?.remove();
+  const connected = isConnected();
+  const div = document.createElement('div');
+  div.id = 'syncmodal';
+  div.className = 'modal-mask no-print';
+  div.innerHTML = `
+  <div class="modal card">
+    <div class="modal-head"><h2>☁️ 云同步与备份</h2><button class="btn btn-sm btn-ghost" id="m-close">✕</button></div>
+    ${connected ? `
+      <p class="modal-p">已连接 GitHub Gist。数据在打开页面、切回页面时自动拉取,每次做题后自动推送。</p>
+      <p class="modal-p">状态:<b>${{ ok: '✅ 正常', syncing: '同步中…', error: '⚠️ ' + sync.error, local: '待同步' }[sync.status]}</b>
+      ${sync.lastSyncAt ? ` · 上次同步 ${new Date(sync.lastSyncAt).toLocaleTimeString()}` : ''}</p>
+      <div class="model-actions">
+        <button class="btn btn-primary" id="m-sync">立即双向同步</button>
+        <button class="btn btn-ghost" id="m-disc">断开连接</button>
+      </div>` : `
+      <p class="modal-p">连接后,两台设备(比如家里电脑和 iPad)的做题记录、错题本会自动合并同步。数据存在<b>你自己 GitHub 账号的私有 Gist</b> 里,不经过任何第三方。</p>
+      <ol class="modal-ol">
+        <li><a href="https://github.com/settings/tokens/new?scopes=gist&description=word-problem-coach-sync" target="_blank" rel="noopener">点这里创建 GitHub Token</a>(已自动勾选 gist 权限,直接点最下面的 Generate token)</li>
+        <li>复制生成的 token,粘贴到下面 → 连接</li>
+        <li>换一台设备打开本站,粘贴同一个 token 即可同步</li>
+      </ol>
+      <div class="pc-row">
+        <input type="password" id="m-token" placeholder="ghp_ 开头的 token" style="flex:1;min-width:200px" class="num-input">
+        <button class="btn btn-primary" id="m-conn">连接</button>
+      </div>
+      <p class="modal-p" id="m-err" style="color:var(--wrong)"></p>`}
+    <hr class="modal-hr">
+    <h3>💾 手动备份</h3>
+    <div class="model-actions">
+      <button class="btn btn-sm" id="m-export">导出 JSON 备份</button>
+      <button class="btn btn-sm" id="m-import">从备份恢复</button>
+    </div>
+  </div>`;
+  document.body.appendChild(div);
+  const $ = id => div.querySelector('#' + id);
+  div.addEventListener('click', e => { if (e.target === div) div.remove(); });
+  $('m-close').addEventListener('click', () => div.remove());
+  $('m-export').addEventListener('click', () => {
+    const blob = new Blob([exportJSON()], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `wpc-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+  });
+  $('m-import').addEventListener('click', () => {
+    const text = prompt('把之前导出的备份 JSON 粘贴到这里:');
     if (text) {
-      try { importJSON(text); alert('恢复成功!'); route(); }
+      try { importJSON(text); alert('恢复成功!'); div.remove(); route(); }
       catch (e) { alert('恢复失败:' + e.message); }
     }
+  });
+  if (connected) {
+    $('m-sync').addEventListener('click', async () => {
+      $('m-sync').disabled = true;
+      await syncNow();
+      div.remove(); openSyncModal();
+    });
+    $('m-disc').addEventListener('click', () => {
+      if (confirm('断开后数据仍保留在本设备和 Gist 里,只是不再自动同步。确定?')) { disconnect(); div.remove(); refreshSyncBadge(); }
+    });
+  } else {
+    $('m-conn').addEventListener('click', async () => {
+      const t = $('m-token').value.trim();
+      if (!t) return;
+      $('m-conn').disabled = true; $('m-conn').textContent = '连接中…';
+      try {
+        await connect(t);
+        div.remove(); route();
+      } catch (e) {
+        $('m-err').textContent = '连接失败:' + e.message;
+        $('m-conn').disabled = false; $('m-conn').textContent = '连接';
+      }
+    });
   }
 }
 
 window.addEventListener('hashchange', route);
+sync.onChange = refreshSyncBadge;
 
-loadData().then(route).catch(err => {
+loadData().then(() => {
+  initSync();
+  route();
+}).catch(err => {
   view.innerHTML = `<div class="card"><h2>加载失败</h2><p>${err.message}</p><p>请刷新重试。</p></div>`;
 });
