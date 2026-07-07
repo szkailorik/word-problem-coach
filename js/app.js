@@ -149,6 +149,20 @@ function openSyncModal() {
 window.addEventListener('hashchange', route);
 sync.onChange = refreshSyncBadge;
 
+// 做题后实时刷新顶栏错题角标(轻量重绘)
+let badgeTimer = null;
+window.addEventListener('wpc:saved', () => {
+  clearTimeout(badgeTimer);
+  badgeTimer = setTimeout(renderTopbar, 400);
+});
+
+// PWA:注册 Service Worker(离线可用;本地 http.server 也支持 localhost)
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
+}
+
 loadData().then(() => {
   initSync();
   route();

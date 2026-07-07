@@ -204,7 +204,8 @@ export function renderDrill(el, mode, param) {
 
       if (correct) {
         session.streak++;
-        $('feedback').innerHTML = `<div class="fb fb-right">✅ ${sg ? '很好,这道错题闯过一关!' : `答对了!${esc(q.answer.sentence)}${hintsUsed ? '(用了提示也很棒)' : ' 干净利落!'}`}</div>`;
+        const milestone = { 5: '🎖 连对 5 题,手感来了!', 10: '🏅 连对 10 题,太稳了!', 20: '🏆 连对 20 题,今天是大师!' }[session.streak] || '';
+        $('feedback').innerHTML = `<div class="fb fb-right">✅ ${sg ? '很好,这道错题闯过一关!' : `答对了!${esc(q.answer.sentence)}${hintsUsed ? '(用了提示也很棒)' : ' 干净利落!'}`}${milestone ? `<br><b>${milestone}</b>` : ''}</div>`;
       } else {
         session.streak = 0;
         $('feedback').innerHTML = `<div class="fb fb-wrong">${sg ? '没关系,重新回到第一关,过几天再来。' : gaveUp ? '没关系,先看懂讲解 👇' : `❌ 正确答案是 <b>${q.answer.value}${esc(q.answer.unit || '')}</b>,看讲解找找卡点 👇`}</div>`;

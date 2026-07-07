@@ -3,7 +3,7 @@
 import { QUESTIONS, QMAP, METHODS, TAG_LIST } from '../data.js';
 import { generate, regenerate, GENERATORS } from '../gen/generators.js';
 import { esc } from '../ui.js';
-import { state, profile, nextSeed } from '../store.js';
+import { state, profile, nextSeed, dueErrors, weakestTags } from '../store.js';
 import { statusMap, statusIcon, STATUS_META } from '../status.js';
 import { buildSheetsHTML, todayStr } from '../print-sheet.js';
 
@@ -18,7 +18,7 @@ const BANK_LEVEL = { core: 1, book3: 1, book4: 2, book5: 2, book6: 3 };
 let selected = new Map(); // key(qid) -> { kind:'bank'|'gen', q, level }
 
 export function renderPrint(el) {
-  const ui = { bank: 'all', tag: '', st: 'all', genTag: TAG_LIST[0], genLevel: 1, genN: 3 };
+  const ui = { bank: 'all', tag: '', st: 'all', genTag: TAG_LIST[0], genLevel: 1, genN: 3, hideFigure: true };
   const opts = { en: true, key: true, work: 'm', variants: 0 };
 
   draw();
@@ -28,6 +28,7 @@ export function renderPrint(el) {
     return QUESTIONS.filter(q =>
       (ui.bank === 'all' || q.bank === ui.bank) &&
       (!ui.tag || q.tag === ui.tag) &&
+      (!ui.hideFigure || !q.needsFigure) &&
       (ui.st === 'all' || (ui.st === 'none' ? !sm[q.id] : sm[q.id] === ui.st)));
   }
 
@@ -44,6 +45,15 @@ export function renderPrint(el) {
         <h1>🖨 打印中心</h1>
         <p class="paper-note">勾选想打的题(或直接生成新题),可为每道题自动附上同类变式;下面的纸面预览就是打印效果。</p>
 
+        <div class="card" style="margin-bottom:14px">
+          <h3 style="margin-bottom:8px">⚡ 一键组卷</h3>
+          <div class="model-actions">
+            <button class="btn" id="preset-daily">📅 今日特训卷(6 道薄弱模型新题)</button>
+            <button class="btn" id="preset-due">🔁 到期错题卷(原题 + 每题 2 变式)</button>
+            <button class="btn" id="preset-model">🎯 模型专项卷(下方所选模型 10 道)</button>
+          </div>
+        </div>
+
         <div class="card print-controls">
           <div class="pc-row">
             <label>从题库选:</label>
@@ -58,13 +68,14 @@ export function renderPrint(el) {
             </select>
             <button class="btn btn-sm" id="sel-all">全选筛出的 ${list.length} 道</button>
             <button class="btn btn-sm btn-ghost" id="sel-clear">清空已选</button>
+            <label style="font-weight:500"><input type="checkbox" id="f-fig" ${ui.hideFigure ? 'checked' : ''}> 排除需配图的题 🖼</label>
           </div>
           <div class="pc-list">
             ${list.map(q => `
               <label class="pc-item">
                 <input type="checkbox" data-q="${q.id}" ${selected.has(q.id) ? 'checked' : ''}>
                 <span class="st">${statusIcon(sm[q.id])}</span>
-                <span>${esc(q.zh.slice(0, 40))}${q.zh.length > 40 ? '…' : ''}</span>
+                <span>${q.needsFigure ? '🖼 ' : ''}${esc(q.zh.slice(0, 40))}${q.zh.length > 40 ? '…' : ''}</span>
                 <span class="bank-src">${esc(q.source || q.bank)}</span>
               </label>`).join('') || '<p class="empty">筛选下没有题。</p>'}
           </div>
@@ -105,9 +116,44 @@ export function renderPrint(el) {
 
   function bind() {
     const $ = id => el.querySelector('#' + id);
+    // 一键组卷
+    $('preset-daily').addEventListener('click', () => {
+      selected = new Map();
+      const weak = weakestTags(TAG_LIST.filter(t => GENERATORS[t]), 3);
+      for (let i = 0; i < 6; i++) {
+        const t = weak[i % weak.length];
+        const q = generate(t, 1 + (i % 2), nextSeed(t));
+        selected.set(q.id, { kind: 'gen', q, level: q.level });
+      }
+      opts.variants = 0;
+      draw(); build();
+    });
+    $('preset-due').addEventListener('click', () => {
+      selected = new Map();
+      for (const e of dueErrors().slice(0, 12)) {
+        const q = QMAP.get(e.qid) || regenerate(e.qid);
+        if (q) selected.set(e.qid, { kind: QMAP.has(e.qid) ? 'bank' : 'gen', q, level: e.level || 1 });
+      }
+      opts.variants = 2;
+      draw();
+      if (selected.size) build();
+      else el.querySelector('#sheets').innerHTML = '<p class="empty no-print">当前没有到期的错题。</p>';
+    });
+    $('preset-model').addEventListener('click', () => {
+      const t = $('g-tag').value;
+      selected = new Map();
+      const levels = [1, 1, 1, 1, 2, 2, 2, 2, 3, 3];
+      for (const lv of levels) {
+        const q = generate(t, lv, nextSeed(t));
+        selected.set(q.id, { kind: 'gen', q, level: lv });
+      }
+      opts.variants = 0;
+      draw(); build();
+    });
     $('f-bank').addEventListener('change', e => { ui.bank = e.target.value; draw(); });
     $('f-tag').addEventListener('change', e => { ui.tag = e.target.value; draw(); });
     $('f-st').addEventListener('change', e => { ui.st = e.target.value; draw(); });
+    $('f-fig').addEventListener('change', e => { ui.hideFigure = e.target.checked; draw(); });
     $('sel-all').addEventListener('click', () => { filtered().forEach(q => selected.set(q.id, { kind: 'bank', q, level: BANK_LEVEL[q.bank] || 1 })); draw(); });
     $('sel-clear').addEventListener('click', () => { selected = new Map(); draw(); });
     el.querySelectorAll('[data-q]').forEach(cb => cb.addEventListener('change', () => {

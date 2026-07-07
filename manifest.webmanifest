@@ -1,0 +1,16 @@
+{
+  "name": "应用题教练 · Word Problem Coach",
+  "short_name": "应用题教练",
+  "description": "小学数学应用题训练:15 大心智模型 + 无限同类题生成 + 错题间隔复习",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#4f46e5",
+  "background_color": "#f6f8fc",
+  "lang": "zh-CN",
+  "icons": [
+    { "src": "assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

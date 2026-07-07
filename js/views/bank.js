@@ -59,7 +59,7 @@ function renderList(el, list, opts, sm) {
   const rows = list.map(q => `
     <a class="bank-row ${sm[q.id] ? 'st-' + sm[q.id] : ''}" href="${link(opts, { q: q.id })}">
       <span>${statusIcon(sm[q.id])}</span>
-      <span>${esc(q.zh.slice(0, 44))}${q.zh.length > 44 ? '…' : ''}</span>
+      <span>${q.needsFigure ? '🖼 ' : ''}${esc(q.zh.slice(0, 44))}${q.zh.length > 44 ? '…' : ''}</span>
       <span class="bank-src">${esc(q.source || q.bank)}</span>
     </a>`).join('');
 
@@ -117,6 +117,7 @@ function renderOne(el, list, idx, opts) {
     <div class="card q-card">
       <div class="q-tag">${esc(m.name)}</div>
       ${stemHTML(q)}
+      ${q.needsFigure ? `<div class="fb fb-warn">🖼 本题依赖原书配图,请翻开《101 Must-Know》${esc(q.source || '')}对照原图来做。</div>` : ''}
       <p class="paper-note">✍️ 在草稿纸上完整做一遍,再对答案。</p>
       <div class="model-actions">
         <button class="btn btn-primary" id="reveal">做完了,看讲解 →</button>

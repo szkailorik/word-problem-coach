@@ -21,6 +21,7 @@ export function buildSheetsHTML(items, opts, meta, METHODS) {
         <span class="p-badge">${esc((METHODS[it.q.tag]?.name || '').replace(/^\d+\.\s*/, ''))}</span>
         ${it.variantOf ? `<span class="p-badge p-badge-variant">变式 · 源自第 ${it.variantOf} 题</span>` : ''}
         ${it.kind === 'bank' && it.q.source ? `<span class="p-badge">${esc(it.q.source)}</span>` : ''}
+        ${it.q.needsFigure ? `<span class="p-badge p-badge-variant">🖼 需对照原书配图</span>` : ''}
         <div class="p-stem">${esc(it.q.zh)}</div>
         ${opts.en ? `<div class="p-en">${esc(it.q.en)}</div>` : ''}
         <div class="p-work h-${opts.work}"></div>
