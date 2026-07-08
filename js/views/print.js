@@ -1,27 +1,25 @@
 // 打印中心:筛选/勾选题目 → 每题可附同类变式 → A4 卷面 + 答案页
 // 屏幕上的纸面预览和打印输出完全一致(@media print 只隐藏控制区)。
-import { QUESTIONS, QMAP, METHODS, TAG_LIST } from '../data.js';
+import { QUESTIONS, QMAP, METHODS, TAG_LIST, BANKS, BANK_LEVEL } from '../data.js';
 import { generate, regenerate, GENERATORS } from '../gen/generators.js';
 import { esc } from '../ui.js';
-import { state, profile, nextSeed, dueErrors, weakestTags } from '../store.js';
-import { statusMap, statusIcon, STATUS_META } from '../status.js';
+import { state, nextSeed, dueErrors, weakestTags, saveSheet } from '../store.js';
+import { statusMap, statusIcon } from '../status.js';
 import { buildSheetsHTML, todayStr } from '../print-sheet.js';
 
-const BANKS = [
-  { id: 'all', name: '全部册' }, { id: 'core', name: 'Core' },
-  { id: 'book3', name: 'Book 3' }, { id: 'book4', name: 'Book 4' },
-  { id: 'book5', name: 'Book 5' }, { id: 'book6', name: 'Book 6' },
-];
-const BANK_LEVEL = { core: 1, book3: 1, book4: 2, book5: 2, book6: 3 };
-
-// 选择集跨渲染保留(切页面后清空)
+// 选择集跨渲染保留;打印存档后清空
 let selected = new Map(); // key(qid) -> { kind:'bank'|'gen', q, level }
+let presetTitle = null;   // 一键组卷/快速出题带来的卷名,手动改选后失效
+let pendingAuto = false;  // 仅"刚被预选跳转进来"这一次自动出预览,防旧选择集借尸还魂
 
 export function renderPrint(el) {
   const ui = { bank: 'all', tag: '', st: 'all', genTag: TAG_LIST[0], genLevel: 1, genN: 3, hideFigure: true };
   const opts = { en: true, key: true, work: 'm', variants: 0 };
+  let current = null; // 本次预览 { items, title, sheet:落库后的卷子 }
 
   draw();
+  if (pendingAuto && selected.size) build(); // 从错题本/快速出题预选跳转过来:直接出预览
+  pendingAuto = false;
 
   function filtered() {
     const sm = statusMap();
@@ -119,6 +117,7 @@ export function renderPrint(el) {
     // 一键组卷
     $('preset-daily').addEventListener('click', () => {
       selected = new Map();
+      presetTitle = '今日特训卷';
       const weak = weakestTags(TAG_LIST.filter(t => GENERATORS[t]), 3);
       for (let i = 0; i < 6; i++) {
         const t = weak[i % weak.length];
@@ -130,6 +129,7 @@ export function renderPrint(el) {
     });
     $('preset-due').addEventListener('click', () => {
       selected = new Map();
+      presetTitle = '到期错题卷';
       for (const e of dueErrors().slice(0, 12)) {
         const q = QMAP.get(e.qid) || regenerate(e.qid);
         if (q) selected.set(e.qid, { kind: QMAP.has(e.qid) ? 'bank' : 'gen', q, level: e.level || 1 });
@@ -142,6 +142,7 @@ export function renderPrint(el) {
     $('preset-model').addEventListener('click', () => {
       const t = $('g-tag').value;
       selected = new Map();
+      presetTitle = `模型专项卷·${(METHODS[t]?.name || t).replace(/^\d+\.\s*/, '')}`;
       const levels = [1, 1, 1, 1, 2, 2, 2, 2, 3, 3];
       for (const lv of levels) {
         const q = generate(t, lv, nextSeed(t));
@@ -154,15 +155,17 @@ export function renderPrint(el) {
     $('f-tag').addEventListener('change', e => { ui.tag = e.target.value; draw(); });
     $('f-st').addEventListener('change', e => { ui.st = e.target.value; draw(); });
     $('f-fig').addEventListener('change', e => { ui.hideFigure = e.target.checked; draw(); });
-    $('sel-all').addEventListener('click', () => { filtered().forEach(q => selected.set(q.id, { kind: 'bank', q, level: BANK_LEVEL[q.bank] || 1 })); draw(); });
-    $('sel-clear').addEventListener('click', () => { selected = new Map(); draw(); });
+    $('sel-all').addEventListener('click', () => { presetTitle = null; filtered().forEach(q => selected.set(q.id, { kind: 'bank', q, level: BANK_LEVEL[q.bank] || 1 })); draw(); });
+    $('sel-clear').addEventListener('click', () => { selected = new Map(); presetTitle = null; draw(); });
     el.querySelectorAll('[data-q]').forEach(cb => cb.addEventListener('change', () => {
+      presetTitle = null;
       const q = QMAP.get(cb.dataset.q);
       if (cb.checked) selected.set(q.id, { kind: 'bank', q, level: BANK_LEVEL[q.bank] || 1 });
       else selected.delete(q.id);
       el.querySelector('.pc-count').textContent = `已选 ${selected.size} 道${opts.variants ? ` + 变式 ${selected.size * opts.variants} 道` : ''}`;
     }));
     $('g-add').addEventListener('click', () => {
+      presetTitle = null;
       ui.genTag = $('g-tag').value; ui.genLevel = Number($('g-level').value);
       ui.genN = Math.max(1, Math.min(20, Number($('g-n').value) || 1));
       for (let i = 0; i < ui.genN; i++) {
@@ -176,10 +179,11 @@ export function renderPrint(el) {
     $('o-en').addEventListener('change', e => { opts.en = e.target.checked; });
     $('o-key').addEventListener('change', e => { opts.key = e.target.checked; });
     $('build').addEventListener('click', build);
-    $('doprint').addEventListener('click', () => window.print());
+    $('doprint').addEventListener('click', doPrint);
   }
 
   function build() {
+    el.querySelector('.archived-note')?.remove(); // 新预览了,上一份的存档提示别再挂着
     if (!selected.size) {
       el.querySelector('#sheets').innerHTML = '<p class="empty no-print">还没选题——先勾选上面的题,或生成几道新题。</p>';
       return;
@@ -189,23 +193,51 @@ export function renderPrint(el) {
     let n = 0;
     for (const { kind, q, level } of selected.values()) {
       n++;
-      items.push({ num: n, q, kind, variantOf: null });
+      items.push({ num: n, q, kind, level: level || q.level || 1, variantOf: null });
       if (!GENERATORS[q.tag]) continue; // 基础综合类没有变式生成器
       for (let v = 0; v < opts.variants; v++) {
         n++;
         const vq = generate(q.tag, level, nextSeed(q.tag));
-        items.push({ num: n, q: vq, kind: 'gen', variantOf: items.find(x => x.q === q).num });
+        items.push({ num: n, q: vq, kind: 'gen', level, variantOf: items.find(x => x.q === q).num });
       }
     }
-    el.querySelector('#sheets').innerHTML = buildSheetsHTML(items, opts, { student: state.student, dateStr: todayStr() }, METHODS);
+    current = { items, title: presetTitle || `自选 ${items.length} 题`, sheet: null };
+    renderSheets();
     el.querySelector('#doprint').classList.remove('hidden');
     el.querySelector('#sheets').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
+
+  function renderSheets() {
+    const meta = { student: state.student, dateStr: todayStr(), code: current.sheet?.code };
+    el.querySelector('#sheets').innerHTML = buildSheetsHTML(current.items, opts, meta, METHODS);
+  }
+
+  // 点打印才落库(生成预览不落库,避免垃圾卷)。
+  // 重复打印不会重复存档:同一预览走 current.sheet,重建后内容没变则 saveSheet 内部去重复用旧卷。
+  function doPrint() {
+    if (!current) return;
+    if (!current.sheet) {
+      current.sheet = saveSheet({
+        title: current.title,
+        items: current.items.map(it => ({ num: it.num, qid: it.q.id, tag: it.q.tag, level: it.level, variantOf: it.variantOf })),
+      });
+      renderSheets(); // 把卷号印上纸面再打印
+      el.querySelector('.archived-note')?.remove();
+      el.querySelector('.pc-bar').insertAdjacentHTML('afterend',
+        `<p class="archived-note no-print">📥 已存档为卷 <b>${esc(current.sheet.code)}</b> · 孩子做完后去 <a href="#/grade/${current.sheet.id}">📝 批改中心</a> 录入对错</p>`);
+      // 这批题的使命完成了:清掉选择集,下次进打印中心是干净的,也不会误存到另一位学生名下
+      selected = new Map();
+      presetTitle = null;
+    }
+    window.print();
+  }
 }
 
-// 供错题本/题库跳转:预选一批题再进打印中心
-export function preselectForPrint(qids) {
+// 供错题本/快速出题跳转:预选一批题再进打印中心(进入后自动出预览)
+export function preselectForPrint(qids, title = null) {
   selected = new Map();
+  presetTitle = title;
+  pendingAuto = true;
   for (const qid of qids) {
     const q = QMAP.get(qid) || regenerate(qid);
     if (q) selected.set(q.id || qid, { kind: QMAP.has(qid) ? 'bank' : 'gen', q, level: q.level || BANK_LEVEL[q.bank] || 1 });

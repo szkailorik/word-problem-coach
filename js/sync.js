@@ -2,7 +2,7 @@
 // 数据流:打开/回到页面 → pull 并合并;每次本地保存 → 3 秒防抖 push。
 // 合并规则:attempts 按 (ts,qid) 去重合并,errorBook 按 lastTs 新者胜,
 //           lastDrillSeed 取最大,mastery 由合并后的 attempts 重放重算。
-import { state, save } from './store.js';
+import { state, save, SHEET_CAP } from './store.js';
 
 const TOKEN_KEY = 'wpc_gist_token';
 const GIST_ID_KEY = 'wpc_gist_id';
@@ -156,6 +156,18 @@ function mergeInto(local, remote) {
     for (const [tag, s] of Object.entries(R.lastDrillSeed || {})) {
       L.lastDrillSeed[tag] = Math.max(L.lastDrillSeed[tag] || 0, s);
     }
+
+    // 卷子档案:按 id 并集去重;同一张卷两侧都批过一部分时,逐题并集
+    // (已录的题号是"锁",两侧的锁都要保住;同一题号冲突时取 gradedAt 新的一侧)
+    const sheetMap = new Map();
+    for (const sh of [...(L.sheets || []), ...(R.sheets || [])]) {
+      const prev = sheetMap.get(sh.id);
+      if (!prev) { sheetMap.set(sh.id, sh); continue; }
+      const [older, newer] = (sh.gradedAt || 0) > (prev.gradedAt || 0) ? [prev, sh] : [sh, prev];
+      const grades = (older.grades || newer.grades) ? { ...older.grades, ...newer.grades } : null;
+      sheetMap.set(sh.id, { ...newer, grades, gradedAt: Math.max(older.gradedAt || 0, newer.gradedAt || 0) || null });
+    }
+    L.sheets = [...sheetMap.values()].sort((a, b) => a.ts - b.ts).slice(-SHEET_CAP);
 
     // mastery:用合并后的 attempts 重放,保证跨设备一致
     L.mastery = replayMastery(L.attempts);

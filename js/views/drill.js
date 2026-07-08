@@ -8,7 +8,7 @@ import { METHODS, QMAP, TAG_LIST, familyOf } from '../data.js';
 import { esc, famClass, stemHTML, stepsHTML } from '../ui.js';
 import { state, recordAttempt, addError, reviewResult, dueErrors, nextSeed, tagStats, weakestTags, profile } from '../store.js';
 
-function levelForTag(tag) {
+export function levelForTag(tag) {
   const m = tagStats(tag);
   const acc = m.seen ? m.correct / m.seen : 0;
   if (m.seen >= 20 && acc >= 0.85) return 3;
@@ -20,7 +20,15 @@ function makeGenItem(tag, level) {
   return { kind: 'gen', tag, level, seed: nextSeed(tag) };
 }
 
+// 快速出题面板预置的题单(内存态,刷新即失效,重出一份就好)
+// 记住出题时的学生:中途切学生不能把 A 的题单记到 B 头上
+let customPlaylist = null;
+export function setCustomPlaylist(items, title) { customPlaylist = { items, title, student: state.student }; }
+
 function buildPlaylist(mode, param) {
+  if (mode === 'custom') {
+    return { items: customPlaylist?.items || [], title: customPlaylist?.title || '⚡ 快速训练', finite: true, rec: 'drill' };
+  }
   if (mode === 'daily') {
     const items = dueErrors().slice(0, 3).map(e => ({ kind: 'review', error: e }));
     const fill = 6 - items.length;
@@ -29,20 +37,24 @@ function buildPlaylist(mode, param) {
       const tag = weak[i % weak.length];
       items.push(makeGenItem(tag, levelForTag(tag)));
     }
-    return { items, title: '🚀 每日特训', finite: true };
+    return { items, title: '🚀 每日特训', finite: true, rec: 'daily' };
   }
   if (mode === 'review') {
     let errs = dueErrors();
     if (param) errs = Object.values(profile().errorBook).filter(e => e.qid === param);
     if (!errs.length) errs = dueErrors();
     const items = errs.slice(0, 10).map(e => ({ kind: 'review', error: e }));
-    return { items, title: '🔁 错题复习', finite: true };
+    return { items, title: '🔁 错题复习', finite: true, rec: 'review' };
   }
-  return { items: null, tag: mode, title: null, finite: false }; // endless per-tag
+  return { items: null, tag: mode, title: null, finite: false, rec: 'drill' }; // endless per-tag
 }
 
 export function renderDrill(el, mode, param) {
-  if (mode !== 'daily' && mode !== 'review' && !GENERATORS[mode]) {
+  if (mode === 'custom' && !(customPlaylist && customPlaylist.items.length && customPlaylist.student === state.student)) {
+    el.innerHTML = `<div class="card empty-card"><h2>题单已失效</h2><p>快速出题的题单只在本次打开期间、给出题时选中的学生有效——回首页重新出一份就好。</p><div class="model-actions"><a class="btn btn-primary" href="#/">返回首页</a></div></div>`;
+    return;
+  }
+  if (mode !== 'daily' && mode !== 'review' && mode !== 'custom' && !GENERATORS[mode]) {
     el.innerHTML = `<div class="card empty-card"><h2>这一类没有出题机</h2><p>基础综合是直接列式的计算题,去题库按顺序练即可。</p><div class="model-actions"><a class="btn btn-primary" href="#/bank?tag=${mode}">📚 去题库练</a><a class="btn" href="#/">返回首页</a></div></div>`;
     return;
   }
@@ -213,7 +225,7 @@ export function renderDrill(el, mode, param) {
       }
 
       // 记录
-      recordAttempt({ qid: q.id, tag: q.tag, correct, mode: origin ? 'review' : (pl.finite ? 'daily' : 'drill'), level: q.level || (origin && origin.error.level) || 1 });
+      recordAttempt({ qid: q.id, tag: q.tag, correct, mode: origin ? 'review' : pl.rec, level: q.level || (origin && origin.error.level) || 1 });
       if (origin) {
         reviewResult(origin.error.qid, correct);
       } else if (!correct) {
@@ -264,6 +276,13 @@ export function renderDrill(el, mode, param) {
         <button class="btn" id="again">再来一轮</button>
       </div>
     </div>`;
-    el.querySelector('#again').addEventListener('click', () => renderDrill(el, mode, param));
+    el.querySelector('#again').addEventListener('click', () => {
+      // 快速训练"再来一轮"要换新题:同模型同难度、全新种子(原题单答案刚看过,重刷没意义)
+      if (mode === 'custom' && customPlaylist) {
+        customPlaylist.items = customPlaylist.items.map(it =>
+          it.kind === 'gen' ? { ...it, seed: nextSeed(it.tag) } : it);
+      }
+      renderDrill(el, mode, param);
+    });
   }
 }

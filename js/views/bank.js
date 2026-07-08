@@ -1,18 +1,8 @@
 // SAP 101 题库:通关图(一眼看到做过/待训练)+ 筛选列表 + 一题一屏自评
-import { QUESTIONS, METHODS, TAG_LIST, familyOf } from '../data.js';
+import { QUESTIONS, METHODS, TAG_LIST, familyOf, BANKS, BANK_LEVEL } from '../data.js';
 import { esc, famClass, stemHTML, stepsHTML } from '../ui.js';
 import { recordAttempt, addError, profile } from '../store.js';
 import { statusMap, statusIcon, STATUS_META } from '../status.js';
-
-const BANKS = [
-  { id: 'all', name: '全部' },
-  { id: 'core', name: 'Core' },
-  { id: 'book3', name: 'Book 3' },
-  { id: 'book4', name: 'Book 4' },
-  { id: 'book5', name: 'Book 5' },
-  { id: 'book6', name: 'Book 6' },
-];
-const BANK_LEVEL = { core: 1, book3: 1, book4: 2, book5: 2, book6: 3 };
 
 export function renderBank(el, query) {
   const params = new URLSearchParams(query || '');

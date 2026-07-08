@@ -9,6 +9,7 @@ import { renderBank } from './views/bank.js';
 import { renderErrors } from './views/errors.js';
 import { renderLog } from './views/log.js';
 import { renderPrint } from './views/print.js';
+import { renderGrade } from './views/grade.js';
 
 const view = document.getElementById('view');
 
@@ -27,6 +28,7 @@ function route() {
   if (parts[0] === 'errors') return renderErrors(view);
   if (parts[0] === 'log') return renderLog(view);
   if (parts[0] === 'print') return renderPrint(view);
+  if (parts[0] === 'grade') return renderGrade(view, parts[1] || '');
   renderHome(view);
 }
 

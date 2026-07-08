@@ -23,6 +23,14 @@ export async function loadData() {
   if (METHODS.basic) TAG_LIST = [...TAG_LIST, 'basic'];
 }
 
+// 册与默认难度(bank.js / print.js / 快速出题共用)
+export const BANKS = [
+  { id: 'all', name: '全部册' }, { id: 'core', name: 'Core' },
+  { id: 'book3', name: 'Book 3' }, { id: 'book4', name: 'Book 4' },
+  { id: 'book5', name: 'Book 5' }, { id: 'book6', name: 'Book 6' },
+];
+export const BANK_LEVEL = { core: 1, book3: 1, book4: 2, book5: 2, book6: 3 };
+
 const BASIC_FAMILY = { id: 'basic-fam', name: '基础综合', headline: '看清问句,按步就班', teacherLine: '', ids: ['basic'] };
 
 export function familyOf(tag) {

@@ -4,8 +4,22 @@
     {
       "name": "wpc",
       "runtimeExecutable": "python3",
-      "runtimeArgs": ["-m", "http.server", "5199"],
-      "port": 5199
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "5237"
+      ],
+      "port": 5237
+    },
+    {
+      "name": "wpc-fresh",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "5301"
+      ],
+      "port": 5301
     }
   ]
 }

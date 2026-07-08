@@ -1,24 +1,20 @@
 // 训练档案:按天回看做了多少题、对多少、错了哪些
-import { METHODS, QMAP } from '../data.js';
-import { regenerate } from '../gen/generators.js';
-import { esc } from '../ui.js';
+import { METHODS } from '../data.js';
+import { esc, stemOf, hhmm, clip } from '../ui.js';
 import { profile } from '../store.js';
 
-const MODE_NAME = { daily: '特训', drill: '刷题', review: '复习', bank: '题库' };
+const MODE_NAME = { daily: '特训', drill: '刷题', review: '复习', bank: '题库', paper: '纸卷' };
 
 function dayKey(ts) {
   const d = new Date(ts);
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 function weekday(ts) { return '周' + '日一二三四五六'[new Date(ts).getDay()]; }
-function hhmm(ts) {
-  const d = new Date(ts);
-  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
-}
-
-function stemOf(qid) {
-  const q = QMAP.get(qid) || regenerate(qid);
-  return q ? q.zh : qid;
+// 往前数 i 个自然日(按日历减,不按 86400 秒减,避免夏令时错位)
+function daysAgo(i) {
+  const d = new Date();
+  d.setDate(d.getDate() - i);
+  return d;
 }
 
 export function renderLog(el) {
@@ -41,7 +37,7 @@ export function renderLog(el) {
   let streak = 0;
   const keys = new Set(days.keys());
   for (let i = 0; ; i++) {
-    const k = dayKey(Date.now() - i * 86400000);
+    const k = dayKey(daysAgo(i).getTime());
     if (keys.has(k)) streak++;
     else if (i === 0) continue; // 今天还没练不打断
     else break;
@@ -57,7 +53,7 @@ export function renderLog(el) {
       <div class="log-item">
         <span>${a.correct ? '✅' : '❌'}</span>
         <span class="when">${hhmm(a.ts)}</span>
-        <span>${esc(stemOf(a.qid).slice(0, 42))}…</span>
+        <span>${esc(clip(stemOf(a.qid), 42))}</span>
         <span class="mode">${MODE_NAME[a.mode] || a.mode} · ${esc((METHODS[a.tag]?.name || a.tag).replace(/^\d+\.\s*/, ''))}</span>
       </div>`).join('');
     const isToday = k === todayK;
@@ -73,6 +69,24 @@ export function renderLog(el) {
     </div>`;
   }).join('');
 
+  // 近 7 天节奏(蓝柱 = 做题数,内层绿柱 = 答对数)
+  const week = [];
+  for (let i = 6; i >= 0; i--) {
+    const ts = daysAgo(i).getTime();
+    const arr = days.get(dayKey(ts)) || [];
+    week.push({ ts, n: arr.length, r: arr.filter(a => a.correct).length });
+  }
+  const wMax = Math.max(...week.map(w => w.n), 1);
+  const weekChart = `
+  <div class="card week-chart" title="近 7 天:做题数(浅)与答对数(深)">
+    ${week.map((w, i) => `
+      <div class="wc-col">
+        <div class="wc-bar" style="height:${Math.round(w.n / wMax * 52)}px"><i style="height:${w.n ? Math.round(w.r / w.n * 100) : 0}%"></i></div>
+        <span class="wc-n">${w.n || ''}</span>
+        <span class="wc-day">${i === 6 ? '今天' : weekday(w.ts)}</span>
+      </div>`).join('')}
+  </div>`;
+
   el.innerHTML = `
   <div class="log">
     <a class="crumb" href="#/">← 返回首页</a>
@@ -84,6 +98,7 @@ export function renderLog(el) {
       <div class="stat"><b>${total ? Math.round(correct / total * 100) : 0}%</b><span>总正确率</span></div>
       <div class="stat"><b>${dayList.length}</b><span>训练天数</span></div>
     </div>
+    ${weekChart}
     ${dayCards || '<p class="empty">还没有训练记录——去做几道题,这里就会一天一天记下来。</p>'}
   </div>`;
 

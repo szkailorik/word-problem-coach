@@ -1,5 +1,24 @@
 // 小工具:HTML 转义、题干双语渲染、通用组件
 import { state } from './store.js';
+import { QMAP } from './data.js';
+import { regenerate } from './gen/generators.js';
+
+// 由 qid 还原题干(题库题直查,生成题按 id 复现)——档案/批改中心共用
+export function stemOf(qid) {
+  const q = QMAP.get(qid) || regenerate(qid);
+  return q ? q.zh : qid;
+}
+
+// 截断加省略号(不够长就原样返回)
+export function clip(s, n) {
+  s = String(s);
+  return s.length > n ? s.slice(0, n) + '…' : s;
+}
+
+export function hhmm(ts) {
+  const d = new Date(ts);
+  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+}
 
 export function esc(s) {
   return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));

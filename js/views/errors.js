@@ -36,7 +36,7 @@ export function renderErrors(el) {
   </div>`;
 
   el.querySelector('#print-due')?.addEventListener('click', () => {
-    preselectForPrint(due.map(e => e.qid));
+    preselectForPrint(due.map(e => e.qid), '到期错题卷');
     location.hash = '#/print';
   });
   el.querySelectorAll('[data-remove]').forEach(b => b.addEventListener('click', () => {

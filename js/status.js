@@ -23,3 +23,30 @@ export const STATUS_META = {
 };
 
 export function statusIcon(st) { return (STATUS_META[st || 'none']).icon; }
+
+// ── 套路掌握四级阶梯(首页掌握地图用)───────────────────
+// 阈值是起始值,可按孩子实际情况调。
+const LV2_SEEN = 10, LV2_ACC = 0.7;   // 熟练
+const LV3_SEEN = 20, LV3_ACC = 0.85;  // 精通(还要求该模型没有未掌握的错题)
+
+export const MASTERY_META = [
+  { icon: '⚪', name: '未学' },
+  { icon: '🌱', name: '学习中' },
+  { icon: '💪', name: '熟练' },
+  { icon: '🏆', name: '精通' },
+];
+
+// 有未掌握错题的模型集合;批量算多个 tag 时先取一次,传给 masteryLevel 免得反复扫错题本
+export function openErrorTagSet() {
+  return new Set(Object.values(profile().errorBook).filter(e => !e.mastered).map(e => e.tag));
+}
+
+export function masteryLevel(tag, openTags = null) {
+  const m = profile().mastery[tag];
+  if (!m || !m.seen) return 0;
+  const acc = m.correct / m.seen;
+  const hasOpenErrors = (openTags || openErrorTagSet()).has(tag);
+  if (m.seen >= LV3_SEEN && acc >= LV3_ACC && !hasOpenErrors) return 3;
+  if (m.seen >= LV2_SEEN && acc >= LV2_ACC) return 2;
+  return 1;
+}

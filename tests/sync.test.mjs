@@ -66,5 +66,39 @@ const snapshot = JSON.stringify(local);
 _mergeInto(local, remote);
 check('合并幂等', JSON.stringify(local) === snapshot);
 
+// ── v1.4:卷子档案合并 ─────────────────────────
+const mkSheet = (id, gradedAt = null, grades = null) =>
+  ({ id, code: '0708-AAA', ts: Number(id.slice(1)), title: '卷' + id, items: [{ num: 1, qid: 'q1', tag: 'work_rate', level: 1, variantOf: null }], grades, gradedAt });
+const emptyP = () => ({ attempts: [], errorBook: {}, mastery: {}, lastDrillSeed: {} });
+const A = { version: 1, student: 'KAI', lang: 'both', students: { KAI: { ...emptyP(), sheets: [mkSheet('s1'), mkSheet('s2')] } } };
+const B = { version: 1, student: 'KAI', lang: 'both', students: { KAI: { ...emptyP(), sheets: [mkSheet('s1', 999, { 1: true }), mkSheet('s3')] } } };
+_mergeInto(A, B);
+const sheets = A.students.KAI.sheets;
+check('卷子并集去重为 3 张', sheets.length === 3);
+check('同卷取已批改的一侧', sheets.find(s => s.id === 's1').gradedAt === 999 && sheets.find(s => s.id === 's1').grades[1] === true);
+check('卷子按时间排序', sheets[0].id === 's1' && sheets[2].id === 's3');
+const snap2 = JSON.stringify(A);
+_mergeInto(A, B);
+check('卷子合并幂等', JSON.stringify(A) === snap2);
+
+// 双设备各批一部分:两侧已录的题号("锁")都要保住
+const pa = { ...mkSheet('s7', 100, { 1: true, 2: false }) };
+const pb = { ...mkSheet('s7', 200, { 3: true }) };
+const A2 = { version: 1, students: { KAI: { ...emptyP(), sheets: [pa] } } };
+_mergeInto(A2, { version: 1, students: { KAI: { ...emptyP(), sheets: [pb] } } });
+const m7 = A2.students.KAI.sheets.find(s => s.id === 's7');
+check('分批批改逐题并集', m7.grades[1] === true && m7.grades[2] === false && m7.grades[3] === true);
+check('gradedAt 取较新', m7.gradedAt === 200);
+// 同一题号两侧冲突:gradedAt 新的一侧说了算
+const c1 = { ...mkSheet('s8', 100, { 1: true }) };
+const c2 = { ...mkSheet('s8', 300, { 1: false }) };
+const A3 = { version: 1, students: { KAI: { ...emptyP(), sheets: [c1] } } };
+_mergeInto(A3, { version: 1, students: { KAI: { ...emptyP(), sheets: [c2] } } });
+check('同题冲突新者胜', A3.students.KAI.sheets.find(s => s.id === 's8').grades[1] === false);
+// 老档案(无 sheets 字段)合并不报错
+const C = { version: 1, student: 'KAI', lang: 'both', students: { KAI: emptyP() } };
+_mergeInto(C, { version: 1, students: { KAI: emptyP() } });
+check('老档案无 sheets 也能合并', Array.isArray(C.students.KAI.sheets));
+
 console.log(fails ? `\n${fails} FAILED` : '\nALL PASS');
 process.exit(fails ? 1 : 0);
