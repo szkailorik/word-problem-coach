@@ -2,7 +2,7 @@
 // 数据流:打开/回到页面 → pull 并合并;每次本地保存 → 3 秒防抖 push。
 // 合并规则:attempts 按 (ts,qid) 去重合并,errorBook 按 lastTs 新者胜,
 //           lastDrillSeed 取最大,mastery 由合并后的 attempts 重放重算。
-import { state, save, SHEET_CAP } from './store.js';
+import { state, save, SHEET_CAP, QUIZ_CAP } from './store.js';
 
 const TOKEN_KEY = 'wpc_gist_token';
 const GIST_ID_KEY = 'wpc_gist_id';
@@ -168,6 +168,18 @@ function mergeInto(local, remote) {
       sheetMap.set(sh.id, { ...newer, grades, gradedAt: Math.max(older.gradedAt || 0, newer.gradedAt || 0) || null });
     }
     L.sheets = [...sheetMap.values()].sort((a, b) => a.ts - b.ts).slice(-SHEET_CAP);
+
+    // 辨题记录:按 ts+tag 去重合并(与 attempts 同思路)
+    const qseen = new Set();
+    const qmerged = [];
+    for (const a of [...(L.quizLog || []), ...(R.quizLog || [])]) {
+      const k = a.ts + '_' + a.tag;
+      if (qseen.has(k)) continue;
+      qseen.add(k);
+      qmerged.push(a);
+    }
+    qmerged.sort((a, b) => a.ts - b.ts);
+    L.quizLog = qmerged.slice(-QUIZ_CAP);
 
     // mastery:用合并后的 attempts 重放,保证跨设备一致
     L.mastery = replayMastery(L.attempts);

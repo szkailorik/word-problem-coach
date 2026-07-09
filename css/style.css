@@ -496,3 +496,31 @@ main { max-width: 980px; margin: 0 auto; padding: 20px clamp(12px, 4vw, 32px) 60
   .wc-bar { width: 18px; }
   .fam-progress { max-width: 100px; }
 }
+
+/* ── v1.5:辨题快闪 / 新模型占位 ─────────────── */
+.thumb-emoji {
+  display: flex; align-items: center; justify-content: center;
+  width: 100%; height: 100%; font-size: 54px;
+}
+.learn-emoji {
+  display: flex; align-items: center; justify-content: center;
+  width: 220px; aspect-ratio: 16/10; font-size: 84px; background: var(--fam-soft);
+}
+.quiz-opts {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 10px; margin: 14px 0 6px;
+}
+.quiz-opt { justify-content: flex-start; font-size: 15.5px; padding: 12px 16px; }
+.quiz-opt.quiz-hit { background: #ecfdf5; border-color: var(--right); color: #065f46; font-weight: 800; }
+.quiz-opt.quiz-miss { background: #fff1f2; border-color: var(--wrong); color: #9f1239; }
+.quiz-compare {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 10px 0;
+}
+.qc-col { border-radius: 12px; padding: 10px 14px; font-size: 13.5px; }
+.qc-col p { margin-top: 4px; }
+.qc-bad { background: #fff7f8; border: 1.5px dashed #fecdd3; }
+.qc-good { background: #f0fdf4; border: 1.5px solid #bbf7d0; }
+@media (max-width: 720px) {
+  .quiz-compare { grid-template-columns: 1fr; }
+  .learn-emoji { width: 100%; max-width: 340px; }
+}

@@ -14,7 +14,7 @@ let pendingAuto = false;  // 仅"刚被预选跳转进来"这一次自动出预�
 
 export function renderPrint(el) {
   const ui = { bank: 'all', tag: '', st: 'all', genTag: TAG_LIST[0], genLevel: 1, genN: 3, hideFigure: true };
-  const opts = { en: true, key: true, work: 'm', variants: 0 };
+  const opts = { en: true, key: true, work: 'm', variants: 0, hideTag: false };
   let current = null; // 本次预览 { items, title, sheet:落库后的卷子 }
 
   draw();
@@ -95,6 +95,7 @@ export function renderPrint(el) {
             <label>卷面选项:</label>
             <label><input type="checkbox" id="o-en" ${opts.en ? 'checked' : ''}> 印英文</label>
             <label><input type="checkbox" id="o-key" ${opts.key ? 'checked' : ''}> 带答案页</label>
+            <label title="混合卷不标题型,练'认出这是哪类题'"><input type="checkbox" id="o-hidetag" ${opts.hideTag ? 'checked' : ''}> 不印题型名</label>
             <span>作答空间:</span>
             ${[['s', '紧凑'], ['m', '标准'], ['l', '宽松']].map(([v, n]) => `<button class="btn btn-sm ${opts.work === v ? 'btn-primary' : ''}" data-work="${v}">${n}</button>`).join('')}
           </div>
@@ -178,6 +179,7 @@ export function renderPrint(el) {
     el.querySelectorAll('[data-work]').forEach(b => b.addEventListener('click', () => { opts.work = b.dataset.work; draw(); }));
     $('o-en').addEventListener('change', e => { opts.en = e.target.checked; });
     $('o-key').addEventListener('change', e => { opts.key = e.target.checked; });
+    $('o-hidetag').addEventListener('change', e => { opts.hideTag = e.target.checked; });
     $('build').addEventListener('click', build);
     $('doprint').addEventListener('click', doPrint);
   }

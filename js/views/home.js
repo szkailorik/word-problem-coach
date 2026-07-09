@@ -1,6 +1,6 @@
 // 首页:今日概览 + 快速出题 + 套路掌握地图(四大母套路 × 15 模型)
 import { FAMILIES, METHODS, TAG_LIST } from '../data.js';
-import { totals, tagStats, weakestTags, nextSeed, ungradedSheetCount } from '../store.js';
+import { totals, tagStats, weakestTags, nextSeed, ungradedSheetCount, quizStats } from '../store.js';
 import { esc, famClass } from '../ui.js';
 import { masteryLevel, MASTERY_META, openErrorTagSet } from '../status.js';
 import { GENERATORS, generate } from '../gen/generators.js';
@@ -101,6 +101,7 @@ export function renderHome(el) {
     const pendingSheets = ungradedSheetCount();
 
     const openTags = openErrorTagSet(); // 一次扫描,全页共用
+    const qs = quizStats();
     const familyBlocks = FAMILIES.map(f => {
       const levels = f.ids.map(tag => masteryLevel(tag, openTags));
       const pct = Math.round(levels.reduce((a, b) => a + b, 0) / (levels.length * 3) * 100);
@@ -110,14 +111,17 @@ export function renderHome(el) {
         const s = tagStats(tag);
         const lv = levels[i];
         const accT = s.seen ? Math.round(s.correct / s.seen * 100) : null;
+        const qz = qs[tag];
         return `
         <div class="model-card ${famClass(f.id)}">
           <span class="m-lv m-lv-${lv}" title="${MASTERY_META[lv].name}">${MASTERY_META[lv].icon} ${MASTERY_META[lv].name}</span>
-          <a class="model-thumb" href="#/learn/${tag}"><img src="${m.img}" alt="${esc(m.name)}" loading="lazy"></a>
+          <a class="model-thumb" href="#/learn/${tag}">${m.img
+            ? `<img src="${m.img}" alt="${esc(m.name)}" loading="lazy">`
+            : `<span class="thumb-emoji">${esc(m.memory?.emoji || '🧩')}</span>`}</a>
           <div class="model-body">
             <a class="model-name" href="#/learn/${tag}">${esc(m.name)}</a>
             <div class="model-mantra">${esc(m.memory ? m.memory.mantra : '')}</div>
-            <div class="model-meta">${s.seen ? `练过 ${s.seen} 题 · 正确率 ${accT}%${s.streak >= 3 ? ` · 🔥连对${s.streak}` : ''}` : '还没练过'}</div>
+            <div class="model-meta">${s.seen ? `练过 ${s.seen} 题 · 正确率 ${accT}%${s.streak >= 3 ? ` · 🔥连对${s.streak}` : ''}` : '还没练过'}${qz ? ` · 辨题 ${Math.round(qz.correct / qz.seen * 100)}%` : ''}</div>
             <div class="model-actions">
               <a class="btn btn-sm" href="#/learn/${tag}">📖 学</a>
               <a class="btn btn-sm btn-primary" href="#/drill/${tag}">✏️ 练</a>
@@ -138,18 +142,22 @@ export function renderHome(el) {
       </section>`;
     }).join('');
 
-    const basicLv = masteryLevel('basic', openTags);
-    const basicS = tagStats('basic');
-    const basicBlock = METHODS.basic ? `
+    // 题库直练分类(基础综合 / 图形与度量):无生成器,一行入口
+    const HEADLINES = { basic: '纯计算、单位换算……看清问句按步就班', geometry: '周长、面积、体积……先认图形再选公式' };
+    const basicBlock = ['basic', 'geometry'].filter(t => METHODS[t]).map(t => {
+      const lv = masteryLevel(t, openTags);
+      const s = tagStats(t);
+      return `
     <section class="family">
       <div class="family-head">
-        <h2>${esc(METHODS.basic.name)}</h2>
-        <span class="family-headline">计算、单位、周长面积……看清问句按步就班</span>
-        <span class="m-lv m-lv-${basicLv}" style="position:static">${MASTERY_META[basicLv].icon} ${MASTERY_META[basicLv].name}</span>
-        <span class="fam-skilled">${basicS.seen ? `练过 ${basicS.seen} 题` : '还没练过'}</span>
-        <a class="btn btn-sm btn-primary" href="#/bank?tag=basic">📚 去题库练</a>
+        <h2>${esc(METHODS[t].name)}</h2>
+        <span class="family-headline">${HEADLINES[t]}</span>
+        <span class="m-lv m-lv-${lv}" style="position:static">${MASTERY_META[lv].icon} ${MASTERY_META[lv].name}</span>
+        <span class="fam-skilled">${s.seen ? `练过 ${s.seen} 题` : '还没练过'}</span>
+        <a class="btn btn-sm btn-primary" href="#/bank?tag=${t}">📚 去题库练</a>
       </div>
-    </section>` : '';
+    </section>`;
+    }).join('');
 
     el.innerHTML = `
     <div class="hero">
@@ -164,6 +172,7 @@ export function renderHome(el) {
         <a class="btn btn-big btn-primary" href="#/drill/daily">🚀 每日特训（6 题）</a>
         ${t.due ? `<a class="btn btn-big btn-alert" href="#/drill/review">🔁 错题复习（${t.due} 道到期）</a>` : ''}
         ${pendingSheets ? `<a class="btn btn-big btn-alert" href="#/grade">📝 批改（${pendingSheets} 张卷待批）</a>` : ''}
+        <a class="btn btn-big" href="#/quiz">🧠 辨题快闪</a>
         <a class="btn btn-big" href="#/bank">📚 SAP 101 题库</a>
         <a class="btn btn-big" href="#/errors">📕 错题本</a>
         <a class="btn btn-big" href="#/log">📅 训练档案</a>

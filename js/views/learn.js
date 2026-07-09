@@ -1,14 +1,28 @@
 // 模型学堂:绘本记忆 + 信号/避坑 + 三阶名师例题(逐步展开精讲) + 讲完即测
 import { METHODS, EXAMPLES, familyOf, bankQuestionsByTag } from '../data.js';
-import { GENERATORS } from '../gen/generators.js';
+import { GENERATORS, generate } from '../gen/generators.js';
 import { esc, famClass, stemHTML } from '../ui.js';
 import { state } from '../store.js';
+
+// 没有名师例题的新模型:用生成器出 3 道固定标准例题(⭐→⭐⭐⭐,种子固定保证每次一样)
+function generatedExamples(tag) {
+  const meta = [['标准例题 · 认结构', '标杆'], ['进阶例题 · 换情境', '迁移'], ['挑战例题 · 加难度', '压轴']];
+  const out = [];
+  for (let lv = 1; lv <= 3; lv++) {
+    try {
+      const q = generate(tag, lv, lv);
+      out.push({ title: meta[lv - 1][0], level: meta[lv - 1][1], zh: q.zh, en: q.en, stepRecords: q.steps, answer: { final: q.answer.sentence, detail: '' } });
+    } catch (e) { /* 某档生成失败就少一道 */ }
+  }
+  return out;
+}
 
 export function renderLearn(el, tag) {
   const m = METHODS[tag];
   if (!m) { el.innerHTML = '<p class="empty">找不到这个模型。</p>'; return; }
   const fam = familyOf(tag);
-  const examples = EXAMPLES[tag] || [];
+  const examples = (EXAMPLES[tag] && EXAMPLES[tag].length) ? EXAMPLES[tag]
+    : (GENERATORS[tag] ? generatedExamples(tag) : []);
   const bankCount = bankQuestionsByTag(tag).length;
   const mem = m.memory || {};
 
@@ -18,7 +32,8 @@ export function renderLearn(el, tag) {
   <div class="learn ${famClass(fam.id)}">
     <a class="crumb" href="#/">← 返回地图</a>
     <div class="learn-head card">
-      ${m.img ? `<img class="learn-img" src="${m.img}" alt="${esc(m.name)}">` : ''}
+      ${m.img ? `<img class="learn-img" src="${m.img}" alt="${esc(m.name)}">`
+        : (mem.emoji ? `<div class="learn-img learn-emoji">${esc(mem.emoji)}</div>` : '')}
       <div>
         <div class="family-badge">${esc(fam.name)} · ${esc(fam.headline)}</div>
         <h1>${esc(m.name)}</h1>
@@ -39,7 +54,7 @@ export function renderLearn(el, tag) {
       </div>
     </div>
 
-    ${examples.length ? `<h2 class="sec-title">🎓 名师三阶例题 <span class="sec-sub">标杆题立模型 → 迁移题换情境 → 压轴题加干扰</span></h2>
+    ${examples.length ? `<h2 class="sec-title">${(EXAMPLES[tag] && EXAMPLES[tag].length) ? '🎓 名师三阶例题 <span class="sec-sub">标杆题立模型 → 迁移题换情境 → 压轴题加干扰</span>' : '🎓 三阶标准例题 <span class="sec-sub">认结构 → 换情境 → 加难度,逐步展开讲解</span>'}</h2>
     <div class="examples">${exampleCards}</div>` : ''}
 
     <div class="card learn-cta">

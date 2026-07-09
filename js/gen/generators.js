@@ -1,8 +1,10 @@
-// 15 大心智模型 · 参数化出题生成器
+// 23 个模型 · 参数化出题生成器(15 心智模型 + v1.5 经典八模型)
 // 每个生成器由构造法保证:答案为正整数、中间步骤全为整数、数字干净。
 // generate(tag, level, seed) 完全确定,可用 id 复现题目。
 
 import { Rng, NAMES, ITEMS, PRICE_PAIRS, gcd, lcm, invariant, q } from './engine.js';
+import { CLASSIC_A } from './classic-a.js';
+import { CLASSIC_B } from './classic-b.js';
 
 // 按难度取数量级
 function scale(level, s1, s2, s3) { return level === 1 ? s1 : level === 2 ? s2 : s3; }
@@ -609,6 +611,9 @@ function genWorkBackwards(r, level, seed) {
 }
 
 export const GENERATORS = {
+  // v1.5 经典八模型(和差/和倍差倍/归一归总/平均数/年龄/利润折扣/植树/周期)
+  ...CLASSIC_A,
+  ...CLASSIC_B,
   anchor_single: genAnchorSingle,
   anchor_total: genAnchorTotal,
   anchor_diff: genAnchorDiff,

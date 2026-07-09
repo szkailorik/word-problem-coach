@@ -20,7 +20,9 @@ export async function loadData() {
   FAMILIES = md.families;
   EXAMPLES = ex;
   TAG_LIST = FAMILIES.flatMap(f => f.ids);
-  if (METHODS.basic) TAG_LIST = [...TAG_LIST, 'basic'];
+  for (const extra of ['basic', 'geometry']) {
+    if (METHODS[extra]) TAG_LIST = [...TAG_LIST, extra];
+  }
 }
 
 // 册与默认难度(bank.js / print.js / 快速出题共用)
@@ -31,10 +33,16 @@ export const BANKS = [
 ];
 export const BANK_LEVEL = { core: 1, book3: 1, book4: 2, book5: 2, book6: 3 };
 
-const BASIC_FAMILY = { id: 'basic-fam', name: '基础综合', headline: '看清问句,按步就班', teacherLine: '', ids: ['basic'] };
+// 题库直练分类(无生成器,不在五大母套路里)
+export const EXTRA_FAMILIES = [
+  { id: 'basic-fam', name: '基础综合', headline: '看清问句,按步就班', teacherLine: '', ids: ['basic'] },
+  { id: 'geo-fam', name: '图形与度量', headline: '先认图形,再选公式', teacherLine: '', ids: ['geometry'] },
+];
 
 export function familyOf(tag) {
-  return FAMILIES.find(f => f.ids.includes(tag)) || BASIC_FAMILY;
+  return FAMILIES.find(f => f.ids.includes(tag))
+    || EXTRA_FAMILIES.find(f => f.ids.includes(tag))
+    || EXTRA_FAMILIES[0];
 }
 
 export function bankQuestionsByTag(tag) {

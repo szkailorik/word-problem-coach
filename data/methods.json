@@ -1,1 +1,1275 @@
-{"families":[{"id":"invariant","name":"一、守恒锚点","headline":"先问：什么没变？","teacherLine":"凡是前后状态在变，先找不变量、总量或差值。","ids":["anchor_single","anchor_total","anchor_diff","anchor_double"]},{"id":"unitize","name":"二、统一尺度","headline":"先问：能不能切成同一把尺子？","teacherLine":"比例、差价、等值、分率，本质都是把乱关系统一成同一单位。","ids":["unify_ratio","unify_sub_diff","unify_sub_value","base_mapping"]},{"id":"gap","name":"三、落差剥离","headline":"先问：多出来或剩下的是哪一段？","teacherLine":"混合、盈亏、剩余、重叠，都要把隐藏的落差单独剥出来。","ids":["flatten_assume","flatten_gap","fraction_rem","logic_overlap"]},{"id":"process","name":"四、过程效率","headline":"先问：过程是正着走，还是倒着还原？","teacherLine":"行程、工程、逆推都不是静态数量，而是按时间或步骤推进。","ids":["speed_catchup","work_rate","work_backwards"]}],"methods":{"anchor_single":{"id":"anchor_single","name":"1. 单边不变模型","signals":["题目中某一方完全没变（没买/没吃/没送）","另一方发生单向变化（买入/送出/消耗）","\"X 没变\"、\"Y 又买了 N 个\""],"pitfalls":["不要把\"没变\"的一方当成变量","记得把不变的量设为\"1 份\""],"related":["anchor_total","anchor_diff"],"encyclopedia":null,"memory":{"cue":"白熊守住不动的篮子","mantra":"先圈没变，再退变化。","beats":["圈住没变的一方","把后来状态退回去","用变化量找到原来"],"classic":"最经典的是“后来一样多 / 后来多几”这类补齐题。","archetypes":["后来一样多","补齐后反问原来","变化后仍有差距"]},"disambiguation":{"confuseWith":"内部转移模型 / 差额不变模型","tellApart":"只有一方真正在变，另一方完全没动，就先用单边不变。","switchWhen":"如果是 A 给 B、总数没变，就换内部转移；如果两边同增同减，就换差额不变。"},"progression":{"stage":"从一个不变量开始","upgrade":"先学会在变化里抓住没变的一边。","unlocks":"为内部转移、差额不变打底。"},"img":"assets/storybook/anchor_single.jpg"},"anchor_total":{"id":"anchor_total","name":"2. 内部转移模型","signals":["\"A 给 B N 个\"、\"内部转移\"","总人数/总量不变","\"共 X 个\"、\"两人合计\""],"pitfalls":["不要重复计算转移的量","总和不变才是关键"],"related":["anchor_single","anchor_diff"],"encyclopedia":null,"memory":{"cue":"大托盘一直没变，只是左右搬","mantra":"总量不跑，左右在换。","beats":["先写合计不变","看谁给谁多少","用现状反推原状"],"classic":"最经典的是“从 A 给 B 后相等 / 成比例”的内部转移题。","archetypes":["给来给去后相等","倒水后同高","转移后成比例"]},"disambiguation":{"confuseWith":"单边不变模型 / 差额不变模型","tellApart":"东西在同一个系统里搬来搬去，总数不变，这就是内部转移。","switchWhen":"如果只有一个对象没变，用单边不变；如果稳定的是两者差距，用差额不变。"},"progression":{"stage":"从单边不变升级到总量不变","upgrade":"学会把 A 给 B 看成同一个总量里的重新分配。","unlocks":"为多次转移和终态比例打底。"},"img":"assets/storybook/anchor_total.jpg"},"anchor_diff":{"id":"anchor_diff","name":"3. 差额不变模型","signals":["\"同时各增加 N\"、\"每年都长 1 岁\"","年龄问题","\"差 N 岁\"、\"都小 N\""],"pitfalls":["不要用前态/后态年龄硬套比例","年龄差永远是常数"],"related":["anchor_single","anchor_total"],"encyclopedia":null,"memory":{"cue":"两边一起走，中间差距线不动","mantra":"同加同减，差不变。","beats":["先看差值","判断是不是同加同减","直接保留差值"],"classic":"最经典的是年龄差、同时剪短、同时增加的题。","archetypes":["同时得到","同时减少","年龄一起长"]},"disambiguation":{"confuseWith":"单边不变模型 / 内部转移模型","tellApart":"两边一起变，但差距不变，核心就是差额。","switchWhen":"如果总数守恒，换内部转移；如果只有一边没动，换单边不变。"},"progression":{"stage":"从总量不变升级到差值不变","upgrade":"学会判断同增同减时，总量会变但差值不变。","unlocks":"年龄题、长度差、同速变化题会更稳。"},"img":"assets/storybook/anchor_diff.jpg"},"anchor_double":{"id":"anchor_double","name":"4. 双变比例模型","signals":["A 和 B 都发生了变化，且变化量不同","\"卖出 X 个，又加入 Y 个\"","比例从 a:b 变为 c:d"],"pitfalls":["不要忽略后态比例的等式性质","必须列后态代数方程"],"related":["unify_ratio","anchor_single"],"encyclopedia":null,"memory":{"cue":"前后两座塔都变了，要接两张照片","mantra":"前态设份，后态列比。","beats":["先用原比例设份数","把变化量加减进去","用新比例列等式"],"classic":"最经典的是“原来一个比，变化后另一个比”的压轴题。","archetypes":["原比变新比","两桶同时加减","人数转入后变比"]},"disambiguation":{"confuseWith":"公倍切分模型 / 单边不变模型","tellApart":"前后比例都出现，而且两边都变，要用后态比例锁等式。","switchWhen":"如果只有比例分配没有前后变化，换公倍切分；如果有一方没变，先试单边不变。"},"progression":{"stage":"从一个不变量升级到前后两态接桥","upgrade":"两边都变时，不猜不变量，而是把前态份数和后态关系接起来。","unlocks":"进入比例变化、复杂前后态题。"},"img":"assets/storybook/anchor_double.jpg"},"unify_ratio":{"id":"unify_ratio","name":"5. 公倍切分模型","signals":["\"A 是 B 的 N 倍\"、\"比 a:b\"","多组比例对不齐","\"周长 = 长+宽+...共 Nu\""],"pitfalls":["\"周长包含 2 个长 2 个宽\" 不要漏算","比例相加不是总\"个\""],"related":["anchor_single","base_mapping"],"encyclopedia":null,"memory":{"cue":"长条都切成一样的小块","mantra":"份数先切齐，答案才清楚。","beats":["把比看成份数","合成总份或周长份","求 1 份再回推"],"classic":"最经典的是总量比例、周长比例、两筐差量题。","archetypes":["总量按比分","周长里藏两长两宽","求两边差多少"]},"disambiguation":{"confuseWith":"量率对应模型 / 单边不变模型","tellApart":"题目主要是倍数、比例、份数要切齐，优先统一份数。","switchWhen":"如果有具体量对应某个分率，换量率对应；如果有不变量连接前后，换单边不变。"},"progression":{"stage":"统一尺度的第一步","upgrade":"把倍数、比例、总量统一成同一把份数尺。","unlocks":"为差价、等值、百分比对应建立份数感。"},"img":"assets/storybook/unify_ratio.jpg"},"unify_sub_diff":{"id":"unify_sub_diff","name":"6. 差价代换模型","signals":["\"A 比 B 贵 $N\"","两种物品同时买，总价已知","\"1 桌子 + 4 椅子共 $X\""],"pitfalls":["代换后别忘了减差价","替换的是贵的，不是便宜的"],"related":["unify_sub_value","flatten_assume"],"encyclopedia":null,"memory":{"cue":"先把贵出来的一截剥掉","mantra":"总差除单差。","beats":["找每件差多少","找一共差多少","总差除单差"],"classic":"最经典的是贵便宜物品、大小本、礼盒差价题。","archetypes":["同数量不同单价","多花的钱来自单差","把贵的先换便宜"]},"disambiguation":{"confuseWith":"等值代换模型 / 假设法","tellApart":"两类对象有固定差价，总价差能反推数量，用差价代换。","switchWhen":"如果题目给的是组合等值，换等值代换；如果是混合总量和总脚/总价，换假设法。"},"progression":{"stage":"从份数统一到差量代换","upgrade":"看到固定差价或差量，先扣掉多出来的部分。","unlocks":"两类物品总价题不用急着列方程。"},"img":"assets/storybook/unify_sub_diff.jpg"},"unify_sub_value":{"id":"unify_sub_value","name":"7. 等值代换模型","signals":["\"3 A 和 2 B 总共 $X\"","无法直接求单价","\"M 个苹果 = N 个橘子\""],"pitfalls":["先看整组等值，别一上来求单价","把等值物品总价设为公倍数"],"related":["unify_sub_diff","unify_ratio"],"encyclopedia":null,"memory":{"cue":"天平两边虽然不同，但总值一样","mantra":"别求单价，先守等值。","beats":["找几 A 等于几 B","先算一边总值","平均到另一边"],"classic":"最经典的是几样物品等值交换题。","archetypes":["几 A 等几 B","组合总价相等","从一边总值求另一边"]},"disambiguation":{"confuseWith":"差价代换模型 / 公倍切分模型","tellApart":"题目强调几个 A 等于几个 B，核心是等值整体。","switchWhen":"如果给的是贵多少便宜多少，换差价代换；如果只是比例份数，换公倍切分。"},"progression":{"stage":"从差量代换到等值代换","upgrade":"不求单价，先把整组等值关系换干净。","unlocks":"多对象等价、组合替换题会更清楚。"},"img":"assets/storybook/unify_sub_value.jpg"},"base_mapping":{"id":"base_mapping","name":"8. 量率对应模型","signals":["分数/百分比 + 具体数字","\"剩下的 1/N 是 M 个\"","\"增加了 X%\""],"pitfalls":["新数量 ≠ 原整体的分数（是剩余的分数）","分清\"原来的几分之几\"和\"剩下的几分之几\""],"related":["fraction_rem","unify_ratio"],"encyclopedia":null,"memory":{"cue":"真实数量和分率段搭桥","mantra":"具体量对应哪一段？","beats":["先找具体量","说清它对应几分之几","求单位 1"],"classic":"最经典的是“几分之几是某个数 / 增加百分比对应某金额”。","archetypes":["部分量对应分率","页数对应几分之几","涨价额对应百分比"]},"disambiguation":{"confuseWith":"层层剩余模型 / 公倍切分模型","tellApart":"一个具体数量正好对应某段分率，先找量率对应。","switchWhen":"如果反复出现“剩下的”，换层层剩余；如果只有比例分配，换公倍切分。"},"progression":{"stage":"从对象代换到量率对应","upgrade":"把具体数精确挂到某个分率或百分比段上。","unlocks":"为剩余分支和百分比变化题打底。"},"img":"assets/storybook/base_mapping.jpg"},"flatten_assume":{"id":"flatten_assume","name":"9. 鸡兔同笼 / 假设法","signals":["鸡兔同笼（两种物品混合，总腿/轮已知）","\"每人 5 支 + 剩 2 支\"","\"25¢ 和 50¢ 共 N 枚\""],"pitfalls":["假设全是便宜的，差值÷(贵−便宜) = 贵的个数","单位要统一"],"related":["flatten_gap","unify_sub_diff"],"encyclopedia":null,"memory":{"cue":"先假装全是简单那一种","mantra":"全当一种，看多差多少。","beats":["统一假设","算理论和实际差","用单体差拆数量"],"classic":"最经典的是鸡兔同笼、硬币混合、轮子混合题。","archetypes":["鸡兔同笼","两种硬币","两轮三轮车"]},"disambiguation":{"confuseWith":"多退少补模型 / 差价代换模型","tellApart":"混合两类对象，给总数和总脚/总价，先统一假设。","switchWhen":"如果是两种分法多或少，换多退少补；如果是两类单价差，换差价代换。"},"progression":{"stage":"落差剥离的第一步","upgrade":"先统一假设成一种对象，再用理论值和真实值的落差拆回去。","unlocks":"鸡兔、硬币、得分、轮子混合题都能统一处理。"},"img":"assets/storybook/flatten_assume.jpg"},"flatten_gap":{"id":"flatten_gap","name":"10. 盈亏缺口 / 多退少补","signals":["\"多拿/少拿 N 个\"","\"缺席 K 人，其余多得 M\"","\"按 A 分剩 M，按 B 分缺 N\""],"pitfalls":["盈亏差 = 总盈亏 / 单次差","不要漏算缺席人的空位"],"related":["flatten_assume","anchor_total"],"encyclopedia":null,"memory":{"cue":"多出来的糖从空位里流出来","mantra":"总缺口除单次差。","beats":["看每组差多少","把盈亏合成总缺口","总缺口除单次差"],"classic":"最经典的是分糖、分书、缺席后每人多分题。","archetypes":["按少分剩余按多分短缺","盈亏合并","缺席导致多分"]},"disambiguation":{"confuseWith":"假设法 / 内部转移模型","tellApart":"同一批东西按两种标准分，出现剩余和短缺，核心是总缺口。","switchWhen":"如果是两类对象混合，换假设法；如果只是组内搬动，换内部转移。"},"progression":{"stage":"从对象落差到方案缺口","upgrade":"两种方案比较时，先找总缺口，再除以单次差。","unlocks":"盈亏、缺席补位、购买方案比较会更稳。"},"img":"assets/storybook/flatten_gap.jpg"},"fraction_rem":{"id":"fraction_rem","name":"11. 余数分支 / 层层剩余","signals":["\"剩下的 1/N\"连续出现","\"花了一半，又花了剩下的 ...\"","多层嵌套的分数"],"pitfalls":["\"剩下的 1/2\" 不能继续乘原整体","把剩下的作为新整体，再往外还原"],"related":["base_mapping","work_backwards"],"encyclopedia":null,"memory":{"cue":"每打开一层剩余箱子，就换一个整体","mantra":"剩下的，就是新整体。","beats":["先认当前整体","从最后剩余往外翻","一层一层还原原整体"],"classic":"最经典的是连续花掉剩下的几分之几。","archetypes":["花掉剩下的一部分","读了剩下的一部分","倒出剩下的一部分"]},"disambiguation":{"confuseWith":"量率对应模型 / 逆推还原模型","tellApart":"连续对“剩下的”取分率，每一层整体都会换。","switchWhen":"如果只是一个具体量对应一个分率，换量率对应；如果题目是最后结果反推原来，换逆推还原。"},"progression":{"stage":"从总缺口到层层剩余","upgrade":"每一次“剩下的”都是新整体，通常从最后往前翻。","unlocks":"连续分率、剩余倒推题不再乱用旧整体。"},"img":"assets/storybook/fraction_rem.jpg"},"speed_catchup":{"id":"speed_catchup","name":"12. 动态行程追及相遇","signals":["\"X 先出发 T 小时，Y 追赶\"","两车、两人追及或相遇","给定速度+时间差"],"pitfalls":["时间相同是核心","距离差 ÷ 速度差 = 追及时间"],"related":["work_rate","unify_ratio"],"encyclopedia":null,"memory":{"cue":"快的那只一点点吃掉距离差","mantra":"距离差除速度差。","beats":["先算领先距离","再算每分钟缩短多少","差距除差速"],"classic":"最经典的是先出发追及、后车追前车、小船追大船。","archetypes":["先跑一段再追","先出发几分钟","后者每分钟更快"]},"disambiguation":{"confuseWith":"工程效率模型 / 公倍切分模型","tellApart":"两个人或车在运动，差距随时间缩小或扩大，就是行程差。","switchWhen":"如果是完成工程的效率，换工程效率；如果只是速度比例分配，换公倍切分。"},"progression":{"stage":"过程效率的第一步","upgrade":"把路程变化看成每单位时间缩短多少距离。","unlocks":"追及用速度差，相遇用速度和。"},"img":"assets/storybook/speed_catchup.jpg"},"work_rate":{"id":"work_rate","name":"13. 工程效率 / 合作问题","signals":["\"A 独做 N 天完成\"","水管进/出水","合作/打工效率"],"pitfalls":["工程量设为天数的 LCM","不要假设工程量 = 1"],"related":["speed_catchup","unify_ratio"],"encyclopedia":null,"memory":{"cue":"大家往同一面墙上加进度","mantra":"总工程统一，效率相加减。","beats":["设统一工程量","求每人每时效率","按合作或进出水组合"],"classic":"最经典的是合作完成、进水排水、两台机器一起做。","archetypes":["两人合作","进水和排水","机器效率相加"]},"disambiguation":{"confuseWith":"动态行程模型 / 公倍切分模型","tellApart":"题目问完成一件事或注满排空，核心是单位时间效率。","switchWhen":"如果对象在路上移动追及，换动态行程；如果只是比例分配，换公倍切分。"},"progression":{"stage":"从距离效率到工作效率","upgrade":"把整项工作统一成可整除的份数，再合并效率。","unlocks":"合作、进出水、中途加入退出题。"},"img":"assets/storybook/work_rate.jpg"},"logic_overlap":{"id":"logic_overlap","name":"14. 容斥重叠模型","signals":["\"既 A 又 B 的人\"","\"A 加 B 比总数还多\"","\"不是 A 也不是 B\""],"pitfalls":["同时属于两组的人会被算两次","容斥公式：|A∪B| = |A|+|B|−|A∩B|"],"related":["base_mapping"],"encyclopedia":null,"memory":{"cue":"站在两个圈重叠处的人会被算两次","mantra":"两边相加，重叠减回。","beats":["先分开统计","找重复计算部分","加总后扣重叠"],"classic":"最经典的是社团、兴趣、喜欢两类东西的统计题。","archetypes":["两项都喜欢","两类兴趣重叠","至少一种"]},"disambiguation":{"confuseWith":"量率对应模型","tellApart":"两个集合有人同时属于两边，直接相加会重复。","switchWhen":"如果没有重叠对象，只是分率对应具体数量，换量率对应。"},"progression":{"stage":"从剩余关系到重复统计","upgrade":"学会识别相加时哪里被重复算了一遍。","unlocks":"集合、至少一个、都不、反求重叠题。"},"img":"assets/storybook/logic_overlap.jpg"},"work_backwards":{"id":"work_backwards","name":"15. 逆推还原模型","signals":["\"最后剩 $X，问原来...\"","已知结局找开头","多步操作倒推"],"pitfalls":["所有操作反向：加变减，乘变除","严格按时间倒序"],"related":["fraction_rem","anchor_total"],"encyclopedia":null,"memory":{"cue":"抱住最后结果，沿脚印倒着走","mantra":"从结尾走回开头。","beats":["先写最后结果","每一步反向运算","倒推回原来"],"classic":"最经典的是多步操作后给结果，问原来多少。","archetypes":["先加再乘","先花再分","先送再剩"]},"disambiguation":{"confuseWith":"层层剩余模型 / 内部转移模型","tellApart":"题目给最终结果，问原来多少，最短路是倒推。","switchWhen":"如果重点是连续“剩下的”分率，换层层剩余；如果是总数内部搬动，换内部转移。"},"progression":{"stage":"从正向过程到倒序还原","upgrade":"已知终态时，按时间倒序把每一步反过来。","unlocks":"复杂转移、连续操作、最终结果反推起点。"},"img":"assets/storybook/work_backwards.jpg"},"basic":{"id":"basic","name":"16. 基础综合(纯计算)","signals":["直接列式就能算的多步四则运算","周长/面积/角度等公式计算","单位换算、时间与分段计价"],"pitfalls":["先圈出问句要求什么","按顺序一步一步列式","算完把答案代回题目检查"],"related":[],"encyclopedia":null,"memory":{"cue":"扎实的口算小工匠","mantra":"看清问句,按步就班。","beats":["圈出已知数和问句","按顺序列式计算","代回检查"]},"disambiguation":{"confuseWith":"15 个心智模型","tellApart":"不需要设份数、找不变量或代换,直接列式就能算的,就是基础综合。","switchWhen":"一旦需要\"设 1 份/找不变量/假设/倒推\",再进对应模型。"},"progression":null,"img":null}}}
+{
+ "families": [
+  {
+   "id": "invariant",
+   "name": "一、守恒锚点",
+   "headline": "先问：什么没变？",
+   "teacherLine": "凡是前后状态在变，先找不变量、总量或差值。",
+   "ids": [
+    "anchor_single",
+    "anchor_total",
+    "anchor_diff",
+    "age_diff",
+    "average"
+   ]
+  },
+  {
+   "id": "unitize",
+   "name": "二、统一尺度",
+   "headline": "先问：能不能切成同一把尺子？",
+   "teacherLine": "倍数、差价、等值、分率、折扣，本质都是把乱关系统一成同一单位。",
+   "ids": [
+    "ratio_units",
+    "unify_ratio",
+    "anchor_double",
+    "unify_sub_diff",
+    "unify_sub_value",
+    "base_mapping",
+    "profit_discount",
+    "fraction_rem"
+   ]
+  },
+  {
+   "id": "gap",
+   "name": "三、落差剥离",
+   "headline": "先问：多出来或剩下的是哪一段？",
+   "teacherLine": "和差、混合、盈亏、重叠，都要把隐藏的落差单独剥出来。",
+   "ids": [
+    "sum_diff",
+    "flatten_assume",
+    "flatten_gap",
+    "logic_overlap"
+   ]
+  },
+  {
+   "id": "process",
+   "name": "四、过程效率",
+   "headline": "先问：过程是正着走，还是倒着还原？",
+   "teacherLine": "归一、行程、工程、逆推都不是静态数量，而是按时间或步骤推进。",
+   "ids": [
+    "unit_rate",
+    "speed_catchup",
+    "work_rate",
+    "work_backwards"
+   ]
+  },
+  {
+   "id": "structure",
+   "name": "五、点段定位",
+   "headline": "先问：是数点、数段，还是数余数？",
+   "teacherLine": "植树、锯木、循环排列，都是在离散结构里数对位置——点与段、余数定位。",
+   "ids": [
+    "interval",
+    "cycle"
+   ]
+  }
+ ],
+ "methods": {
+  "anchor_single": {
+   "id": "anchor_single",
+   "name": "1. 单边不变模型",
+   "signals": [
+    "题目中某一方完全没变（没买/没吃/没送）",
+    "另一方发生单向变化（买入/送出/消耗）",
+    "\"X 没变\"、\"Y 又买了 N 个\""
+   ],
+   "pitfalls": [
+    "不要把\"没变\"的一方当成变量",
+    "分数/比例版本才需要把不变量设为\"1 份\"，整数版直接加减就行"
+   ],
+   "related": [
+    "anchor_total",
+    "anchor_diff"
+   ],
+   "encyclopedia": null,
+   "memory": {
+    "cue": "白熊守住不动的篮子",
+    "mantra": "先圈没变，再退变化。",
+    "beats": [
+     "圈住没变的一方",
+     "把后来状态退回去",
+     "用变化量找到原来"
+    ],
+    "classic": "最经典的是“后来一样多 / 后来多几”这类补齐题。",
+    "archetypes": [
+     "后来一样多",
+     "补齐后反问原来",
+     "变化后仍有差距"
+    ]
+   },
+   "disambiguation": {
+    "confuseWith": "内部转移模型 / 差额不变模型",
+    "tellApart": "只有一方真正在变，另一方完全没动，就先用单边不变。",
+    "switchWhen": "如果是 A 给 B、总数没变，就换内部转移；如果两边同增同减，就换差额不变。"
+   },
+   "progression": {
+    "stage": "从一个不变量开始",
+    "upgrade": "先学会在变化里抓住没变的一边。",
+    "unlocks": "为内部转移、差额不变打底。"
+   },
+   "img": "assets/storybook/anchor_single.jpg",
+   "confusable": [
+    "anchor_total",
+    "anchor_diff",
+    "work_backwards"
+   ]
+  },
+  "anchor_total": {
+   "id": "anchor_total",
+   "name": "2. 内部转移模型",
+   "signals": [
+    "\"A 给 B N 个\"、\"内部转移\"",
+    "总人数/总量不变",
+    "\"共 X 个\"、\"两人合计\""
+   ],
+   "pitfalls": [
+    "不要重复计算转移的量",
+    "总和不变才是关键"
+   ],
+   "related": [
+    "anchor_single",
+    "anchor_diff"
+   ],
+   "encyclopedia": null,
+   "memory": {
+    "cue": "大托盘一直没变，只是左右搬",
+    "mantra": "总量不跑，左右在换。",
+    "beats": [
+     "先写合计不变",
+     "看谁给谁多少",
+     "用现状反推原状"
+    ],
+    "classic": "最经典的是“从 A 给 B 后相等 / 成比例”的内部转移题。",
+    "archetypes": [
+     "给来给去后相等",
+     "倒水后同高",
+     "转移后成比例"
+    ]
+   },
+   "disambiguation": {
+    "confuseWith": "单边不变模型 / 差额不变模型",
+    "tellApart": "东西在同一个系统里搬来搬去，总数不变，这就是内部转移。",
+    "switchWhen": "如果只有一个对象没变，用单边不变；如果稳定的是两者差距，用差额不变。"
+   },
+   "progression": {
+    "stage": "从单边不变升级到总量不变",
+    "upgrade": "学会把 A 给 B 看成同一个总量里的重新分配。",
+    "unlocks": "为多次转移和终态比例打底。"
+   },
+   "img": "assets/storybook/anchor_total.jpg",
+   "confusable": [
+    "anchor_single",
+    "anchor_diff",
+    "average"
+   ]
+  },
+  "anchor_diff": {
+   "id": "anchor_diff",
+   "name": "3. 差额不变模型",
+   "signals": [
+    "\"同时各增加 N\"、\"每年都长 1 岁\"",
+    "年龄问题",
+    "\"差 N 岁\"、\"都小 N\""
+   ],
+   "pitfalls": [
+    "不要用前态/后态年龄硬套比例",
+    "年龄差永远是常数"
+   ],
+   "related": [
+    "anchor_single",
+    "anchor_total"
+   ],
+   "encyclopedia": null,
+   "memory": {
+    "cue": "两边一起走，中间差距线不动",
+    "mantra": "同加同减，差不变。",
+    "beats": [
+     "先看差值",
+     "判断是不是同加同减",
+     "直接保留差值"
+    ],
+    "classic": "最经典的是年龄差、同时剪短、同时增加的题。",
+    "archetypes": [
+     "同时得到",
+     "同时减少",
+     "年龄一起长"
+    ]
+   },
+   "disambiguation": {
+    "confuseWith": "单边不变模型 / 内部转移模型",
+    "tellApart": "两边一起变，但差距不变，核心就是差额。",
+    "switchWhen": "如果总数守恒，换内部转移；如果只有一边没动，换单边不变。"
+   },
+   "progression": {
+    "stage": "从总量不变升级到差值不变",
+    "upgrade": "学会判断同增同减时，总量会变但差值不变。",
+    "unlocks": "年龄题、长度差、同速变化题会更稳。"
+   },
+   "img": "assets/storybook/anchor_diff.jpg",
+   "confusable": [
+    "age_diff",
+    "anchor_single",
+    "sum_diff"
+   ]
+  },
+  "anchor_double": {
+   "id": "anchor_double",
+   "name": "4. 双变比例模型",
+   "signals": [
+    "A 和 B 都发生了变化，且变化量不同",
+    "\"卖出 X 个，又加入 Y 个\"",
+    "比例从 a:b 变为 c:d"
+   ],
+   "pitfalls": [
+    "不要忽略后态比例的等式性质",
+    "必须列后态代数方程"
+   ],
+   "related": [
+    "unify_ratio",
+    "anchor_single"
+   ],
+   "encyclopedia": null,
+   "memory": {
+    "cue": "前后两座塔都变了，要接两张照片",
+    "mantra": "前态设份，后态列比。",
+    "beats": [
+     "先用原比例设份数",
+     "把变化量加减进去",
+     "用新比例列等式"
+    ],
+    "classic": "最经典的是“原来一个比，变化后另一个比”的压轴题。",
+    "archetypes": [
+     "原比变新比",
+     "两桶同时加减",
+     "人数转入后变比"
+    ]
+   },
+   "disambiguation": {
+    "confuseWith": "公倍切分模型 / 单边不变模型",
+    "tellApart": "前后比例都出现，而且两边都变，要用前态份数接后态比例。",
+    "switchWhen": "如果只有比例分配没有前后变化，换公倍切分；如果有一方没变，先试单边不变。它是守恒思维的\"失效出口\"：发现什么都在变、找不到不变量时，就改用份数与比例接桥。"
+   },
+   "progression": {
+    "stage": "统一尺度的压轴款",
+    "upgrade": "守恒锚点失效时（什么都在变），不再硬找不变量，而是把前态设成份数，用后态比例锁方程。",
+    "unlocks": "进入比例变化、复杂前后态压轴题。"
+   },
+   "img": "assets/storybook/anchor_double.jpg",
+   "confusable": [
+    "unify_ratio",
+    "anchor_total"
+   ]
+  },
+  "unify_ratio": {
+   "id": "unify_ratio",
+   "name": "5. 公倍切分模型",
+   "signals": [
+    "\"A 是 B 的 N 倍\"、\"比 a:b\"",
+    "多组比例对不齐",
+    "\"周长 = 长+宽+...共 Nu\""
+   ],
+   "pitfalls": [
+    "\"周长包含 2 个长 2 个宽\" 不要漏算",
+    "比例相加不是总\"个\""
+   ],
+   "related": [
+    "anchor_single",
+    "base_mapping"
+   ],
+   "encyclopedia": null,
+   "memory": {
+    "cue": "长条都切成一样的小块",
+    "mantra": "份数先切齐，答案才清楚。",
+    "beats": [
+     "把比看成份数",
+     "合成总份或周长份",
+     "求 1 份再回推"
+    ],
+    "classic": "最经典的是总量比例、周长比例、两筐差量题。",
+    "archetypes": [
+     "总量按比分",
+     "周长里藏两长两宽",
+     "求两边差多少"
+    ]
+   },
+   "disambiguation": {
+    "confuseWith": "量率对应模型 / 单边不变模型",
+    "tellApart": "题目主要是倍数、比例、份数要切齐，优先统一份数。",
+    "switchWhen": "如果有具体量对应某个分率，换量率对应；如果有不变量连接前后，换单边不变。"
+   },
+   "progression": {
+    "stage": "统一尺度的第一步",
+    "upgrade": "把倍数、比例、总量统一成同一把份数尺。",
+    "unlocks": "为差价、等值、百分比对应建立份数感。"
+   },
+   "img": "assets/storybook/unify_ratio.jpg",
+   "confusable": [
+    "ratio_units",
+    "base_mapping",
+    "anchor_double"
+   ]
+  },
+  "unify_sub_diff": {
+   "id": "unify_sub_diff",
+   "name": "6. 差价代换模型",
+   "signals": [
+    "两种东西数量相同（各买一样多），总价已知",
+    "每件的差价已知：\"A 比 B 每件贵 $N\"",
+    "\"1 桌子 + 4 椅子\"这类固定搭配的组合总价"
+   ],
+   "pitfalls": [
+    "代换后别忘了减差价",
+    "替换的是贵的，不是便宜的"
+   ],
+   "related": [
+    "unify_sub_value",
+    "flatten_assume"
+   ],
+   "encyclopedia": null,
+   "memory": {
+    "cue": "先把贵出来的一截剥掉",
+    "mantra": "总差除单差。",
+    "beats": [
+     "找每件差多少",
+     "找一共差多少",
+     "总差除单差"
+    ],
+    "classic": "最经典的是贵便宜物品、大小本、礼盒差价题。",
+    "archetypes": [
+     "同数量不同单价",
+     "多花的钱来自单差",
+     "把贵的先换便宜"
+    ]
+   },
+   "disambiguation": {
+    "confuseWith": "假设法(鸡兔同笼) / 多退少补模型",
+    "tellApart": "两种东西数量相同、只差单价，把贵出来的一截剥掉——总差÷单差。",
+    "switchWhen": "如果两类数量不同、但总件数和总脚数（总价）都给了，换假设法；如果是同一批东西按两种方案分，换盈亏缺口。三兄弟都是\"总差÷单差\"，一个思想三种皮。"
+   },
+   "progression": {
+    "stage": "从份数统一到差量代换",
+    "upgrade": "看到固定差价或差量，先扣掉多出来的部分。",
+    "unlocks": "两类物品总价题不用急着列方程。"
+   },
+   "img": "assets/storybook/unify_sub_diff.jpg",
+   "confusable": [
+    "flatten_assume",
+    "flatten_gap",
+    "unify_sub_value"
+   ]
+  },
+  "unify_sub_value": {
+   "id": "unify_sub_value",
+   "name": "7. 等值代换模型",
+   "signals": [
+    "\"3 A 和 2 B 总共 $X\"",
+    "无法直接求单价",
+    "\"M 个苹果 = N 个橘子\""
+   ],
+   "pitfalls": [
+    "先看整组等值，别一上来求单价",
+    "把等值物品总价设为公倍数"
+   ],
+   "related": [
+    "unify_sub_diff",
+    "unify_ratio"
+   ],
+   "encyclopedia": null,
+   "memory": {
+    "cue": "天平两边虽然不同，但总值一样",
+    "mantra": "别求单价，先守等值。",
+    "beats": [
+     "找几 A 等于几 B",
+     "先算一边总值",
+     "平均到另一边"
+    ],
+    "classic": "最经典的是几样物品等值交换题。",
+    "archetypes": [
+     "几 A 等几 B",
+     "组合总价相等",
+     "从一边总值求另一边"
+    ]
+   },
+   "disambiguation": {
+    "confuseWith": "差价代换模型 / 公倍切分模型",
+    "tellApart": "题目强调几个 A 等于几个 B，核心是等值整体。",
+    "switchWhen": "如果给的是贵多少便宜多少，换差价代换；如果只是比例份数，换公倍切分。"
+   },
+   "progression": {
+    "stage": "从差量代换到等值代换",
+    "upgrade": "不求单价，先把整组等值关系换干净。",
+    "unlocks": "多对象等价、组合替换题会更清楚。"
+   },
+   "img": "assets/storybook/unify_sub_value.jpg",
+   "confusable": [
+    "unify_sub_diff",
+    "unify_ratio"
+   ]
+  },
+  "base_mapping": {
+   "id": "base_mapping",
+   "name": "8. 量率对应模型",
+   "signals": [
+    "分数/百分比 + 具体数字",
+    "\"剩下的 1/N 是 M 个\"",
+    "\"增加了 X%\""
+   ],
+   "pitfalls": [
+    "新数量 ≠ 原整体的分数（是剩余的分数）",
+    "分清\"原来的几分之几\"和\"剩下的几分之几\""
+   ],
+   "related": [
+    "fraction_rem",
+    "unify_ratio"
+   ],
+   "encyclopedia": null,
+   "memory": {
+    "cue": "真实数量和分率段搭桥",
+    "mantra": "具体量对应哪一段？",
+    "beats": [
+     "先找具体量",
+     "说清它对应几分之几",
+     "求单位 1"
+    ],
+    "classic": "最经典的是“几分之几是某个数 / 增加百分比对应某金额”。",
+    "archetypes": [
+     "部分量对应分率",
+     "页数对应几分之几",
+     "涨价额对应百分比"
+    ]
+   },
+   "disambiguation": {
+    "confuseWith": "层层剩余模型 / 公倍切分模型",
+    "tellApart": "一个具体数量正好对应某段分率，先找量率对应。",
+    "switchWhen": "如果反复出现“剩下的”，换层层剩余；如果只有比例分配，换公倍切分。"
+   },
+   "progression": {
+    "stage": "从对象代换到量率对应",
+    "upgrade": "把具体数精确挂到某个分率或百分比段上。",
+    "unlocks": "为剩余分支和百分比变化题打底。"
+   },
+   "img": "assets/storybook/base_mapping.jpg",
+   "confusable": [
+    "fraction_rem",
+    "profit_discount",
+    "unify_ratio"
+   ]
+  },
+  "flatten_assume": {
+   "id": "flatten_assume",
+   "name": "9. 鸡兔同笼 / 假设法",
+   "signals": [
+    "两类对象混在一起数（鸡兔、两种硬币、两轮三轮车）",
+    "总头数和总脚数都已知（总件数和总价都已知）",
+    "每只/每件的\"脚数\"或单价不同"
+   ],
+   "pitfalls": [
+    "假设全是便宜的，差值÷(贵−便宜) = 贵的个数",
+    "单位要统一"
+   ],
+   "related": [
+    "flatten_gap",
+    "unify_sub_diff"
+   ],
+   "encyclopedia": null,
+   "memory": {
+    "cue": "先假装全是简单那一种",
+    "mantra": "全当一种，看多差多少。",
+    "beats": [
+     "统一假设",
+     "算理论和实际差",
+     "用单体差拆数量"
+    ],
+    "classic": "最经典的是鸡兔同笼、硬币混合、轮子混合题。",
+    "archetypes": [
+     "鸡兔同笼",
+     "两种硬币",
+     "两轮三轮车"
+    ]
+   },
+   "disambiguation": {
+    "confuseWith": "差价代换模型 / 多退少补模型",
+    "tellApart": "两类对象混着数，总件数和总脚数（总价）都已知，先统一假设成一种，再看总差。",
+    "switchWhen": "如果两种东西数量相同、只差单价，换差价代换；如果是同一批东西按两种方案分，换盈亏缺口。三兄弟都是\"总差÷单差\"，一个思想三种皮。"
+   },
+   "progression": {
+    "stage": "落差剥离的第一步",
+    "upgrade": "先统一假设成一种对象，再用理论值和真实值的落差拆回去。",
+    "unlocks": "鸡兔、硬币、得分、轮子混合题都能统一处理。"
+   },
+   "img": "assets/storybook/flatten_assume.jpg",
+   "confusable": [
+    "unify_sub_diff",
+    "flatten_gap"
+   ]
+  },
+  "flatten_gap": {
+   "id": "flatten_gap",
+   "name": "10. 盈亏缺口 / 多退少补",
+   "signals": [
+    "\"多拿/少拿 N 个\"",
+    "\"缺席 K 人，其余多得 M\"",
+    "\"按 A 分剩 M，按 B 分缺 N\""
+   ],
+   "pitfalls": [
+    "盈亏差 = 总盈亏 / 单次差",
+    "不要漏算缺席人的空位"
+   ],
+   "related": [
+    "flatten_assume",
+    "anchor_total"
+   ],
+   "encyclopedia": null,
+   "memory": {
+    "cue": "多出来的糖从空位里流出来",
+    "mantra": "总缺口除单次差。",
+    "beats": [
+     "看每组差多少",
+     "把盈亏合成总缺口",
+     "总缺口除单次差"
+    ],
+    "classic": "最经典的是分糖、分书、缺席后每人多分题。",
+    "archetypes": [
+     "按少分剩余按多分短缺",
+     "盈亏合并",
+     "缺席导致多分"
+    ]
+   },
+   "disambiguation": {
+    "confuseWith": "假设法(鸡兔同笼) / 差价代换模型",
+    "tellApart": "同一批东西按两种标准分，出现剩余和短缺，总缺口÷单次差。",
+    "switchWhen": "如果是两类对象混合、给出总件数和总脚数，换假设法；如果两种东西数量相同、只比单价，换差价代换。三兄弟都是\"总差÷单差\"，一个思想三种皮。"
+   },
+   "progression": {
+    "stage": "从对象落差到方案缺口",
+    "upgrade": "两种方案比较时，先找总缺口，再除以单次差。",
+    "unlocks": "盈亏、缺席补位、购买方案比较会更稳。"
+   },
+   "img": "assets/storybook/flatten_gap.jpg",
+   "confusable": [
+    "flatten_assume",
+    "unify_sub_diff",
+    "average"
+   ]
+  },
+  "fraction_rem": {
+   "id": "fraction_rem",
+   "name": "11. 余数分支 / 层层剩余",
+   "signals": [
+    "\"剩下的 1/N\"连续出现",
+    "\"花了一半，又花了剩下的 ...\"",
+    "多层嵌套的分数"
+   ],
+   "pitfalls": [
+    "\"剩下的 1/2\" 不能继续乘原整体",
+    "把剩下的作为新整体，再往外还原"
+   ],
+   "related": [
+    "base_mapping",
+    "work_backwards"
+   ],
+   "encyclopedia": null,
+   "memory": {
+    "cue": "每打开一层剩余箱子，就换一个整体",
+    "mantra": "剩下的，就是新整体。",
+    "beats": [
+     "先认当前整体",
+     "从最后剩余往外翻",
+     "一层一层还原原整体"
+    ],
+    "classic": "最经典的是连续花掉剩下的几分之几。",
+    "archetypes": [
+     "花掉剩下的一部分",
+     "读了剩下的一部分",
+     "倒出剩下的一部分"
+    ]
+   },
+   "disambiguation": {
+    "confuseWith": "量率对应模型 / 逆推还原模型",
+    "tellApart": "连续对“剩下的”取分率，每一层整体都会换。",
+    "switchWhen": "如果只是一个具体量对应一个分率，换量率对应；如果题目是最后结果反推原来，换逆推还原。"
+   },
+   "progression": {
+    "stage": "统一尺度的连环款",
+    "upgrade": "每一层都把\"剩下的\"当成新整体重新单位化，再从最后一层往回翻（逆推）。",
+    "unlocks": "连续分率、剩余倒推题不再乱用旧整体。"
+   },
+   "img": "assets/storybook/fraction_rem.jpg",
+   "confusable": [
+    "base_mapping",
+    "work_backwards",
+    "cycle"
+   ]
+  },
+  "speed_catchup": {
+   "id": "speed_catchup",
+   "name": "12. 动态行程追及相遇",
+   "signals": [
+    "\"X 先出发 T 小时，Y 追赶\"",
+    "两车、两人追及或相遇",
+    "给定速度+时间差"
+   ],
+   "pitfalls": [
+    "时间相同是核心",
+    "距离差 ÷ 速度差 = 追及时间"
+   ],
+   "related": [
+    "work_rate",
+    "unify_ratio"
+   ],
+   "encyclopedia": null,
+   "memory": {
+    "cue": "面对面一起吃掉路程，追在后面慢慢啃掉差距",
+    "mantra": "相遇用速度和，追及用速度差。",
+    "beats": [
+     "先分清是相遇还是追及",
+     "相遇：总路程 ÷ 速度和",
+     "追及：距离差 ÷ 速度差"
+    ],
+    "classic": "最经典的是相向而行几时相遇、先出发几分钟被追上的题。",
+    "archetypes": [
+     "相向而行何时相遇",
+     "先跑一段再追",
+     "后者每分钟更快"
+    ]
+   },
+   "disambiguation": {
+    "confuseWith": "工程效率模型 / 公倍切分模型",
+    "tellApart": "两个人或车在运动，差距随时间缩小或扩大，就是行程差。",
+    "switchWhen": "如果是完成工程的效率，换工程效率；如果只是速度比例分配，换公倍切分。"
+   },
+   "progression": {
+    "stage": "过程效率的第一步",
+    "upgrade": "把路程变化看成每单位时间缩短多少距离。",
+    "unlocks": "追及用速度差，相遇用速度和。"
+   },
+   "img": "assets/storybook/speed_catchup.jpg",
+   "confusable": [
+    "work_rate",
+    "unit_rate",
+    "anchor_diff"
+   ]
+  },
+  "work_rate": {
+   "id": "work_rate",
+   "name": "13. 工程效率 / 合作问题",
+   "signals": [
+    "\"A 独做 N 天完成\"",
+    "水管进/出水",
+    "合作/打工效率"
+   ],
+   "pitfalls": [
+    "把工程量设为几个时间的公倍数份，效率就是整数",
+    "本站统一用份数法避免分数；把工程量设为 1 在数学上同样成立，只是要和分数打交道"
+   ],
+   "related": [
+    "speed_catchup",
+    "unify_ratio"
+   ],
+   "encyclopedia": null,
+   "memory": {
+    "cue": "大家往同一面墙上加进度",
+    "mantra": "总工程统一，效率相加减。",
+    "beats": [
+     "设统一工程量",
+     "求每人每时效率",
+     "按合作或进出水组合"
+    ],
+    "classic": "最经典的是合作完成、进水排水、两台机器一起做。",
+    "archetypes": [
+     "两人合作",
+     "进水和排水",
+     "机器效率相加"
+    ]
+   },
+   "disambiguation": {
+    "confuseWith": "动态行程模型 / 公倍切分模型",
+    "tellApart": "题目问完成一件事或注满排空，核心是单位时间效率。",
+    "switchWhen": "如果对象在路上移动追及，换动态行程；如果只是比例分配，换公倍切分。"
+   },
+   "progression": {
+    "stage": "从距离效率到工作效率",
+    "upgrade": "把整项工作统一成可整除的份数，再合并效率。",
+    "unlocks": "合作、进出水、中途加入退出题。"
+   },
+   "img": "assets/storybook/work_rate.jpg",
+   "confusable": [
+    "unit_rate",
+    "speed_catchup"
+   ]
+  },
+  "logic_overlap": {
+   "id": "logic_overlap",
+   "name": "14. 容斥重叠模型",
+   "signals": [
+    "\"既 A 又 B 的人\"",
+    "\"A 加 B 比总数还多\"",
+    "\"不是 A 也不是 B\""
+   ],
+   "pitfalls": [
+    "同时属于两组的人会被算两次",
+    "容斥公式：|A∪B| = |A|+|B|−|A∩B|"
+   ],
+   "related": [
+    "base_mapping"
+   ],
+   "encyclopedia": null,
+   "memory": {
+    "cue": "站在两个圈重叠处的人会被算两次",
+    "mantra": "两边相加，重叠减回。",
+    "beats": [
+     "先分开统计",
+     "找重复计算部分",
+     "加总后扣重叠"
+    ],
+    "classic": "最经典的是社团、兴趣、喜欢两类东西的统计题。",
+    "archetypes": [
+     "两项都喜欢",
+     "两类兴趣重叠",
+     "至少一种"
+    ]
+   },
+   "disambiguation": {
+    "confuseWith": "量率对应模型",
+    "tellApart": "两个集合有人同时属于两边，直接相加会重复。",
+    "switchWhen": "如果没有重叠对象，只是分率对应具体数量，换量率对应。"
+   },
+   "progression": {
+    "stage": "从剩余关系到重复统计",
+    "upgrade": "学会识别相加时哪里被重复算了一遍。",
+    "unlocks": "集合、至少一个、都不、反求重叠题。"
+   },
+   "img": "assets/storybook/logic_overlap.jpg",
+   "confusable": [
+    "base_mapping",
+    "flatten_gap"
+   ]
+  },
+  "work_backwards": {
+   "id": "work_backwards",
+   "name": "15. 逆推还原模型",
+   "signals": [
+    "\"最后剩 $X，问原来...\"",
+    "已知结局找开头",
+    "多步操作倒推"
+   ],
+   "pitfalls": [
+    "所有操作反向：加变减，乘变除",
+    "严格按时间倒序"
+   ],
+   "related": [
+    "fraction_rem",
+    "anchor_total"
+   ],
+   "encyclopedia": null,
+   "memory": {
+    "cue": "抱住最后结果，沿脚印倒着走",
+    "mantra": "从结尾走回开头。",
+    "beats": [
+     "先写最后结果",
+     "每一步反向运算",
+     "倒推回原来"
+    ],
+    "classic": "最经典的是多步操作后给结果，问原来多少。",
+    "archetypes": [
+     "先加再乘",
+     "先花再分",
+     "先送再剩"
+    ]
+   },
+   "disambiguation": {
+    "confuseWith": "层层剩余模型 / 内部转移模型",
+    "tellApart": "题目给最终结果，问原来多少，最短路是倒推。",
+    "switchWhen": "如果重点是连续“剩下的”分率，换层层剩余；如果是总数内部搬动，换内部转移。"
+   },
+   "progression": {
+    "stage": "从正向过程到倒序还原",
+    "upgrade": "已知终态时，按时间倒序把每一步反过来。",
+    "unlocks": "复杂转移、连续操作、最终结果反推起点。"
+   },
+   "img": "assets/storybook/work_backwards.jpg",
+   "confusable": [
+    "fraction_rem",
+    "anchor_total"
+   ]
+  },
+  "basic": {
+   "id": "basic",
+   "name": "16. 基础综合(纯计算)",
+   "signals": [
+    "直接列式就能算的多步四则运算",
+    "周长/面积/角度等公式计算",
+    "单位换算、时间与分段计价"
+   ],
+   "pitfalls": [
+    "先圈出问句要求什么",
+    "按顺序一步一步列式",
+    "算完把答案代回题目检查"
+   ],
+   "related": [],
+   "encyclopedia": null,
+   "memory": {
+    "cue": "扎实的口算小工匠",
+    "mantra": "看清问句,按步就班。",
+    "beats": [
+     "圈出已知数和问句",
+     "按顺序列式计算",
+     "代回检查"
+    ]
+   },
+   "disambiguation": {
+    "confuseWith": "15 个心智模型",
+    "tellApart": "不需要设份数、找不变量或代换,直接列式就能算的,就是基础综合。",
+    "switchWhen": "一旦需要\"设 1 份/找不变量/假设/倒推\",再进对应模型。"
+   },
+   "progression": null,
+   "img": null
+  },
+  "sum_diff": {
+   "id": "sum_diff",
+   "name": "17. 和差问题",
+   "signals": [
+    "两数的和与差同时已知",
+    "\"甲乙共 X 个，甲比乙多 Y 个\"",
+    "\"两人一共…其中一人比另一人多…\""
+   ],
+   "pitfalls": [
+    "(和+差)÷2 是大数，(和−差)÷2 是小数，别弄反",
+    "和与差必须说的是同一对量，单位要先统一",
+    "算出一个数后，用和（或差）验算另一个"
+   ],
+   "related": [
+    "flatten_gap",
+    "ratio_units"
+   ],
+   "encyclopedia": null,
+   "memory": {
+    "cue": "把多出来的一截切下来，两条一样长再平分",
+    "mantra": "和加差，除以二，得大数；和减差，除以二，得小数。",
+    "beats": [
+     "找出和与差这两个数",
+     "和加差除以 2 得大数",
+     "和减差除以 2 得小数"
+    ],
+    "classic": "最经典的是两人共有若干、一人比另一人多几的题。",
+    "archetypes": [
+     "共 X 个且多 Y 个",
+     "两数和差求两数",
+     "切掉多的再平分"
+    ],
+    "emoji": "✂️"
+   },
+   "disambiguation": {
+    "confuseWith": "和倍差倍 / 差额不变模型",
+    "tellApart": "题目直接给出和与差两个具体数，直接 (和±差)÷2。",
+    "switchWhen": "如果给的是和（差）加倍数关系，换和倍差倍；如果差是在变化过程中保持不变的量，那是差额不变的思想。"
+   },
+   "progression": {
+    "stage": "落差剥离的入门款",
+    "upgrade": "先学会把差切掉（或补上），让两条一样长再平分。",
+    "unlocks": "为和倍差倍、盈亏缺口的落差思想打底。"
+   },
+   "img": null,
+   "confusable": [
+    "ratio_units",
+    "anchor_diff",
+    "flatten_gap"
+   ]
+  },
+  "ratio_units": {
+   "id": "ratio_units",
+   "name": "18. 和倍差倍",
+   "signals": [
+    "\"甲是乙的 N 倍\"，同时给出两数的和或差",
+    "\"A 比 B 的 3 倍多 5\"",
+    "倍数关系 + 总量（或差量）同时出现"
+   ],
+   "pitfalls": [
+    "和÷(倍数+1)、差÷(倍数−1)，加 1 减 1 别弄反",
+    "\"3 倍多 5\"要先把多的 5 从和里减掉（或从差里处理掉）再除",
+    "永远把小的量设为 1 份，别把大数当 1 份"
+   ],
+   "related": [
+    "unify_ratio",
+    "sum_diff"
+   ],
+   "encyclopedia": null,
+   "memory": {
+    "cue": "小的当 1 份，大的是好几份摞起来",
+    "mantra": "小量设一份，和除倍加一，差除倍减一。",
+    "beats": [
+     "把小量设为 1 份",
+     "和÷(n+1) 或 差÷(n−1)",
+     "求出 1 份再翻倍"
+    ],
+    "classic": "最经典的是两数的和（差）与倍数同时给出的题。",
+    "archetypes": [
+     "和倍求两数",
+     "差倍求两数",
+     "几倍多几先修正"
+    ],
+    "emoji": "🧮"
+   },
+   "disambiguation": {
+    "confuseWith": "和差问题 / 公倍切分模型",
+    "tellApart": "出现\"几倍\"加上和或差，先把小量设成 1 份。",
+    "switchWhen": "如果给的是和与差两个具体数（没有倍数），换和差问题；如果是 a:b 这样的比例分配，换公倍切分。"
+   },
+   "progression": {
+    "stage": "从和差升级到份数",
+    "upgrade": "把\"几倍\"翻译成\"几份\"，和差问题就升级成了份数问题。",
+    "unlocks": "公倍切分、比例应用题的份数感由此而来。"
+   },
+   "img": null,
+   "confusable": [
+    "sum_diff",
+    "unify_ratio",
+    "age_diff"
+   ]
+  },
+  "unit_rate": {
+   "id": "unit_rate",
+   "name": "19. 归一归总",
+   "signals": [
+    "先给一组数量和总量，再问另一组数量",
+    "\"3 台机器 4 小时生产 X 个，5 台 6 小时生产多少\"",
+    "\"照这样计算\"是标志性短语"
+   ],
+   "pitfalls": [
+    "先求单一量（1 个对象 1 个单位时间做多少），别急着比总数",
+    "归一还是归总，看不变的是\"单一量\"还是\"总量\"",
+    "乘除顺序乱时，给每一步带上单位再检查"
+   ],
+   "related": [
+    "work_rate"
+   ],
+   "encyclopedia": null,
+   "memory": {
+    "cue": "先量出一块砖的大小，再去算整面墙",
+    "mantra": "先求一份是多少，再看一共要几份。",
+    "beats": [
+     "先求出单一量（或总量）",
+     "认清哪个量保持不变",
+     "按新条件重新乘回去"
+    ],
+    "classic": "最经典的是\"照这样计算\"的做工、购物、行路题。",
+    "archetypes": [
+     "照这样计算",
+     "几台机器几小时",
+     "单价不变买更多"
+    ],
+    "emoji": "🧱"
+   },
+   "disambiguation": {
+    "confuseWith": "工程效率模型 / 公倍切分模型",
+    "tellApart": "给一组条件先求出单一量，再推另一组条件，就是归一归总。",
+    "switchWhen": "如果是几个人合作完成同一件事，换工程效率；如果只有比例关系、没有单一量，换公倍切分。"
+   },
+   "progression": {
+    "stage": "过程效率的地基",
+    "upgrade": "先会求\"每一份的效率\"，行程和工程问题才有根。",
+    "unlocks": "工程效率、行程速度本质上都是归一思想。"
+   },
+   "img": null,
+   "confusable": [
+    "work_rate",
+    "average",
+    "unify_ratio"
+   ]
+  },
+  "average": {
+   "id": "average",
+   "name": "20. 平均数与移多补少",
+   "signals": [
+    "\"平均每人 / 平均每天…\"",
+    "几个数的平均数已知，求其中某一个",
+    "\"比平均数多 / 少 N\""
+   ],
+   "pitfalls": [
+    "平均数 × 份数 = 总量，先回到总量再算",
+    "新成员加入或退出后，总量和份数都会变，别只改一个",
+    "移多补少时总量不变：多出的部分正好填进少的坑里"
+   ],
+   "related": [
+    "anchor_total"
+   ],
+   "encyclopedia": null,
+   "memory": {
+    "cue": "把高的沙堆铲平，填到低的坑里",
+    "mantra": "总量除份数，多的补少的。",
+    "beats": [
+     "先用平均数乘回总量",
+     "总量随加入退出更新",
+     "用移多补少验证答案"
+    ],
+    "classic": "最经典的是平均成绩、加入一人后平均数变化的题。",
+    "archetypes": [
+     "平均成绩求单科",
+     "加一人平均变了",
+     "移多补少摊平"
+    ],
+    "emoji": "⚖️"
+   },
+   "disambiguation": {
+    "confuseWith": "内部转移模型 / 归一归总",
+    "tellApart": "围绕\"平均\"二字做文章，核心是总量守恒、摊得一样平。",
+    "switchWhen": "如果是 A 给 B 的具体转移过程，换内部转移；如果是\"照这样计算\"求单一量，换归一归总。"
+   },
+   "progression": {
+    "stage": "总量守恒的应用款",
+    "upgrade": "把平均数看成\"总量不变，摊得一样平\"，先回总量再分。",
+    "unlocks": "加权平均、平均数变化题都从总量入手。"
+   },
+   "img": null,
+   "confusable": [
+    "anchor_total",
+    "unit_rate",
+    "flatten_gap"
+   ]
+  },
+  "age_diff": {
+   "id": "age_diff",
+   "name": "21. 年龄问题",
+   "signals": [
+    "\"今年爸爸 X 岁，儿子 Y 岁\"",
+    "\"几年后 / 几年前，一人是另一人的几倍\"",
+    "两人年龄同时出现并随时间一起变化"
+   ],
+   "pitfalls": [
+    "年龄差永远不变，但倍数关系年年在变",
+    "\"几年后\"两个人都要加同样的年数，别只加一个人",
+    "出现倍数时，用年龄差 ÷ (倍数−1) 求小的年龄"
+   ],
+   "related": [
+    "anchor_diff"
+   ],
+   "encyclopedia": null,
+   "memory": {
+    "cue": "两人一起长大，中间那根差距绳一直绷着不变",
+    "mantra": "年龄差不变，差除倍减一。",
+    "beats": [
+     "先算出年龄差",
+     "锁定差永远不变",
+     "差 ÷ (倍数−1) 定位那一年"
+    ],
+    "classic": "最经典的是\"几年后父亲的年龄是儿子的几倍\"的题。",
+    "archetypes": [
+     "几年后成几倍",
+     "几年前是几倍",
+     "年龄和随年数增长"
+    ],
+    "emoji": "🎂"
+   },
+   "disambiguation": {
+    "confuseWith": "差额不变模型 / 和倍差倍",
+    "tellApart": "年龄随时间一起长，抓住\"差不变\"这根绳就不乱。",
+    "switchWhen": "它本质是差额不变的年龄版；一旦锁定某一年的差与倍数，收尾就是差倍问题。"
+   },
+   "progression": {
+    "stage": "差额不变的招牌应用",
+    "upgrade": "把\"每年都长一岁\"翻译成\"年龄差永远不变\"。",
+    "unlocks": "差倍定位、跨年份倍数题都靠这一招。"
+   },
+   "img": null,
+   "confusable": [
+    "anchor_diff",
+    "ratio_units"
+   ]
+  },
+  "profit_discount": {
+   "id": "profit_discount",
+   "name": "22. 利润与折扣",
+   "signals": [
+    "\"成本 / 进价、定价、售价\"同时出现",
+    "\"打八折\"、\"利润率 X%\"",
+    "\"降价促销后仍赚…\""
+   ],
+   "pitfalls": [
+    "先认准单位 1 是成本还是定价：利润率对成本说，折扣对定价说",
+    "打八折是 ×0.8，不是减 0.8，也不是随便减 8%",
+    "\"先赚 20% 再亏 20%\"回不到原价——两次的单位 1 不一样"
+   ],
+   "related": [
+    "base_mapping"
+   ],
+   "encyclopedia": null,
+   "memory": {
+    "cue": "先问这个百分比是站在哪块价格牌上说话",
+    "mantra": "利润看成本，折扣看定价，单位 1 先站队。",
+    "beats": [
+     "认清成本、定价、售价三个量",
+     "给每个百分比找准单位 1",
+     "按量率对应求出未知量"
+    ],
+    "classic": "最经典的是按成本加成定价、再打折出售问利润的题。",
+    "archetypes": [
+     "加成后再打折",
+     "利润率反求进价",
+     "降价促销仍获利"
+    ],
+    "emoji": "🏷️"
+   },
+   "disambiguation": {
+    "confuseWith": "量率对应模型 / 层层剩余",
+    "tellApart": "出现成本、定价、折扣这些买卖词，先给每个百分比找准单位 1。",
+    "switchWhen": "它本质是量率对应的买卖版；如果百分比连续作用在\"剩下的\"上，换层层剩余。"
+   },
+   "progression": {
+    "stage": "量率对应的实战场",
+    "upgrade": "同一道题里可能有两个不同的单位 1，先站队再计算。",
+    "unlocks": "浓度、税率等一切\"百分比找基准\"的题。"
+   },
+   "img": null,
+   "confusable": [
+    "base_mapping",
+    "fraction_rem"
+   ]
+  },
+  "interval": {
+   "id": "interval",
+   "name": "23. 植树与间隔",
+   "signals": [
+    "\"每隔 X 米种一棵 / 挂一盏\"",
+    "\"锯成 N 段\"、\"敲 N 下钟\"、\"上到 N 楼\"",
+    "\"两端都种 / 只种一端 / 环形\"等位置词"
+   ],
+   "pitfalls": [
+    "先分清数的是点还是段：两端都种，点 = 段 + 1；环形，点 = 段",
+    "锯木头：锯的次数 = 段数 − 1；敲钟：间隔数 = 次数 − 1",
+    "别急着套公式，先画四五个点数一数再下手"
+   ],
+   "related": [
+    "cycle"
+   ],
+   "encyclopedia": null,
+   "memory": {
+    "cue": "手指是点，指缝是段：五根手指只有四个缝",
+    "mantra": "点段差一，两端加一，环形相等。",
+    "beats": [
+     "认清问的是点还是段",
+     "看两端种不种、是不是环形",
+     "段数 ±1（或相等）再乘间距"
+    ],
+    "classic": "最经典的是路边植树、锯木头、上楼梯、敲钟的题。",
+    "archetypes": [
+     "两端都种求棵数",
+     "环形种树",
+     "锯木头与敲钟"
+    ],
+    "emoji": "🌳"
+   },
+   "disambiguation": {
+    "confuseWith": "周期问题 / 归一归总",
+    "tellApart": "问\"多少棵 / 多少段 / 多少下\"，核心是点与段差 1 的辨析。",
+    "switchWhen": "如果图案或事件在循环重复、问\"第 N 个是什么\"，换周期问题用余数定位；如果只是每段耗时的乘除，那是归一思想。"
+   },
+   "progression": {
+    "stage": "点段定位的第一步",
+    "upgrade": "在离散的点和段之间数清楚：谁比谁多 1、少 1，还是一样多。",
+    "unlocks": "上楼梯、敲钟、剪绳子全是同一件事。"
+   },
+   "img": null,
+   "confusable": [
+    "cycle",
+    "unit_rate"
+   ]
+  },
+  "cycle": {
+   "id": "cycle",
+   "name": "24. 周期问题",
+   "signals": [
+    "\"按…的规律重复排列\"",
+    "\"第 N 个是什么颜色 / 是星期几\"",
+    "珠子、旗子、日期等循环出现"
+   ],
+   "pitfalls": [
+    "先数清一个周期有几个元素，再用 N ÷ 周期长",
+    "余数是几，就是周期里的第几个；余数为 0，是周期里的最后一个",
+    "星期问题从\"今天\"往后数，别把今天又多算一天"
+   ],
+   "related": [
+    "interval",
+    "fraction_rem"
+   ],
+   "encyclopedia": null,
+   "memory": {
+    "cue": "旋转木马一圈圈转，看你最后停在第几匹马",
+    "mantra": "除以周期长，余数定位置，余零看末位。",
+    "beats": [
+     "圈出一个完整周期",
+     "总数 ÷ 周期长",
+     "用余数在周期里点名"
+    ],
+    "classic": "最经典的是彩珠排列问第 N 颗、若干天后是星期几的题。",
+    "archetypes": [
+     "第 N 颗珠子什么色",
+     "N 天后星期几",
+     "循环图案数个数"
+    ],
+    "emoji": "🔄"
+   },
+   "disambiguation": {
+    "confuseWith": "植树与间隔 / 余数分支",
+    "tellApart": "同一段图案不断重复，用除法的余数在周期里定位。",
+    "switchWhen": "如果是点与段数个数的 ±1 辨析，换植树间隔；如果\"剩下的\"是分率而不是余数，换层层剩余。"
+   },
+   "progression": {
+    "stage": "从点段定位升级到余数定位",
+    "upgrade": "把\"第几个\"翻译成\"除以周期长，看余数\"。",
+    "unlocks": "日期推算、数列找规律、个位数字循环。"
+   },
+   "img": null,
+   "confusable": [
+    "interval",
+    "fraction_rem"
+   ]
+  },
+  "geometry": {
+   "id": "geometry",
+   "name": "25. 图形与度量",
+   "signals": [
+    "周长、面积、体积等度量词出现",
+    "给出边长、半径等尺寸，求另一个几何量",
+    "不规则图形需要拆分、平移或补形"
+   ],
+   "pitfalls": [
+    "先认清是什么图形，再选公式，别拿错对象硬套",
+    "单位要统一：面积单位换算是平方关系，体积是立方关系",
+    "不规则图形先拆成会算的基本图形，或用平移补形"
+   ],
+   "related": [],
+   "encyclopedia": null,
+   "memory": {
+    "cue": "先给图形报上名字，公式才会来敲门",
+    "mantra": "认图形，选公式，拆不规则。",
+    "beats": [
+     "认清是什么图形",
+     "写出对应公式",
+     "不规则先拆分或平移补形"
+    ],
+    "classic": "最经典的是组合图形求面积、平移求周长的题。",
+    "archetypes": [
+     "组合图形拆分",
+     "平移求周长",
+     "单位换算陷阱"
+    ],
+    "emoji": "📐"
+   },
+   "disambiguation": {
+    "confuseWith": "基础综合(纯计算)",
+    "tellApart": "公式题≠套路题：先认图形再选公式，考的是图形眼力，不是关系转换。本词条不走套路生成器，请去题库分类里多练。",
+    "switchWhen": "如果没有图形、只是多步四则运算，就是基础综合；如果图形里藏着比例或差量关系，再进对应模型。"
+   },
+   "progression": {
+    "stage": "独立的图形工具箱",
+    "upgrade": "认清图形、记熟公式、练会拆分，这一格靠题库积累而不是套路转换。",
+    "unlocks": "组合图形、等积变形、立体展开的基础。"
+   },
+   "img": null,
+   "confusable": [
+    "basic",
+    "unify_ratio"
+   ]
+  }
+ }
+}

@@ -55,7 +55,7 @@ export function renderDrill(el, mode, param) {
     return;
   }
   if (mode !== 'daily' && mode !== 'review' && mode !== 'custom' && !GENERATORS[mode]) {
-    el.innerHTML = `<div class="card empty-card"><h2>这一类没有出题机</h2><p>基础综合是直接列式的计算题,去题库按顺序练即可。</p><div class="model-actions"><a class="btn btn-primary" href="#/bank?tag=${mode}">📚 去题库练</a><a class="btn" href="#/">返回首页</a></div></div>`;
+    el.innerHTML = `<div class="card empty-card"><h2>这一类没有出题机</h2><p>这一类直接看题作答就好,去题库按顺序练即可。</p><div class="model-actions"><a class="btn btn-primary" href="#/bank?tag=${mode}">📚 去题库练</a><a class="btn" href="#/">返回首页</a></div></div>`;
     return;
   }
   const pl = buildPlaylist(mode, param);

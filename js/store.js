@@ -16,6 +16,7 @@ function emptyProfile() {
     mastery: {},       // tag -> { seen, correct, streak }
     lastDrillSeed: {}, // tag -> 已用过的最大 seed,保证刷题不重复
     sheets: [],        // 打印过的卷子档案 { id, code, ts, title, items:[{num,qid,tag,level,variantOf}], grades, gradedAt }
+    quizLog: [],       // 辨题快闪记录 { ts, tag, pick, correct }
   };
 }
 
@@ -46,7 +47,8 @@ export function save() {
 export function profile() {
   if (!state.students[state.student]) state.students[state.student] = emptyProfile();
   const p = state.students[state.student];
-  if (!p.sheets) p.sheets = []; // v1.4 之前的老数据没有这个字段
+  if (!p.sheets) p.sheets = [];   // v1.4 之前的老数据没有这个字段
+  if (!p.quizLog) p.quizLog = []; // v1.5 之前的老数据没有这个字段
   return p;
 }
 
@@ -187,6 +189,27 @@ export function gradeSheet(id, marks) {
   if (applied) s.gradedAt = Date.now();
   save();
   return s;
+}
+
+// ── 辨题快闪:只认题型不解题,单独记账(不进错题本)────
+export const QUIZ_CAP = 1000;
+
+export function recordQuiz({ tag, pick, correct }) {
+  const p = profile();
+  p.quizLog.push({ ts: Date.now(), tag, pick, correct });
+  if (p.quizLog.length > QUIZ_CAP) p.quizLog = p.quizLog.slice(-QUIZ_CAP);
+  save();
+}
+
+// tag -> { seen, correct }
+export function quizStats() {
+  const m = {};
+  for (const a of profile().quizLog) {
+    const t = m[a.tag] || (m[a.tag] = { seen: 0, correct: 0 });
+    t.seen++;
+    if (a.correct) t.correct++;
+  }
+  return m;
 }
 
 // ── 刷题种子:每个 tag 单调递增,保证新题不重复 ──────────
