@@ -1,2 +1,5 @@
 tests/print-test-static.html
 .DS_Store
+.wrangler
+.dev.vars
+node_modules

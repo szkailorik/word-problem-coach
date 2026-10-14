@@ -3,7 +3,7 @@ import { METHODS } from '../data.js';
 import { esc, stemOf, hhmm, clip } from '../ui.js';
 import { profile } from '../store.js';
 
-const MODE_NAME = { daily: '特训', drill: '刷题', review: '复习', bank: '题库', paper: '纸卷' };
+const MODE_NAME = { daily: '特训', drill: '刷题', review: '复习', bank: '题库', paper: '纸卷', variant: '变式' };
 
 function dayKey(ts) {
   const d = new Date(ts);

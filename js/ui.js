@@ -1,11 +1,11 @@
 // 小工具:HTML 转义、题干双语渲染、通用组件
 import { state } from './store.js';
-import { QMAP } from './data.js';
-import { regenerate } from './gen/generators.js';
+import { findQuestion } from './qlookup.js';
+import { renderDiagram } from './diagram.js';
 
-// 由 qid 还原题干(题库题直查,生成题按 id 复现)——档案/批改中心共用
+// 由 qid 还原题干(题库题直查,AI 变式查档案,生成题按 id 复现)——档案/批改中心共用
 export function stemOf(qid) {
-  const q = QMAP.get(qid) || regenerate(qid);
+  const q = findQuestion(qid);
   return q ? q.zh : qid;
 }
 
@@ -55,4 +55,10 @@ export function boxDots(box, total, mastered) {
   let s = '';
   for (let i = 0; i < total; i++) s += `<span class="dot ${i < box || mastered ? 'on' : ''}"></span>`;
   return `<span class="box-dots" title="复习进度">${s}</span>`;
+}
+
+// AI 题自带的图(线段图/数轴/几何)
+export function diagramHTML(d, caption = '') {
+  const svg = d ? renderDiagram(d) : '';
+  return svg ? `<figure class="diagram-box">${svg}${caption ? `<figcaption>${esc(caption)}</figcaption>` : ''}</figure>` : '';
 }

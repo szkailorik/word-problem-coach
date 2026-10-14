@@ -3,6 +3,7 @@ import { QUESTIONS, METHODS, TAG_LIST, familyOf, BANKS, BANK_LEVEL } from '../da
 import { esc, famClass, stemHTML, stepsHTML } from '../ui.js';
 import { recordAttempt, addError, profile } from '../store.js';
 import { statusMap, statusIcon, STATUS_META } from '../status.js';
+import { runCoach } from '../coach.js';
 
 export function renderBank(el, query) {
   const params = new URLSearchParams(query || '');
@@ -125,6 +126,7 @@ function renderOne(el, list, idx, opts) {
       </div>
       <div id="nextrow" class="hidden">
         <div id="gradefb"></div>
+        <div id="coach"></div>
         <button class="btn btn-big btn-primary" id="nextbtn">下一题 →</button>
       </div>
     </div>
@@ -146,7 +148,20 @@ function renderOne(el, list, idx, opts) {
     $('nextrow').classList.remove('hidden');
     $('gradefb').innerHTML = correct
       ? `<div class="fb fb-right">✅ 记下来了,继续!</div>`
-      : `<div class="fb fb-wrong">已收进错题本。明天会安排一道同类变式来复习;也可以<a href="#/drill/${q.tag}">现在就练几道同类题</a>。</div>`;
+      : `<div class="fb fb-wrong">已收进错题本。趁热打铁:先让 AI 老师帮你找卡点,再闯一道变式题。</div>
+        <div class="coach-ask">
+          <label>你算出的答案是多少?<small>(选填,AI 老师能据此推断你错在哪)</small></label>
+          <input type="number" inputmode="decimal" step="any" id="myans" class="num-input" placeholder="?">
+          <button class="btn btn-sm" id="askai">🤖 帮我找卡点</button>
+          <a class="btn btn-sm btn-primary" href="#/drill/variant/${encodeURIComponent(q.id)}">🎯 变式闯关</a>
+        </div>`;
+    if (!correct) {
+      $('askai').addEventListener('click', () => {
+        const v = $('myans').value.trim();
+        $('askai').disabled = true;
+        runCoach($('coach'), q, { answers: v === '' ? [] : [Number(v)], rootQid: q.id, selfGraded: true });
+      });
+    }
     const nb = $('nextbtn');
     if (idx + 1 >= list.length) { nb.textContent = '🏁 这组做完了,回列表'; }
     nb.addEventListener('click', () => {

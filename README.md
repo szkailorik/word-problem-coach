@@ -28,6 +28,19 @@
 - **云同步** ☁️:GitHub Gist 跨设备同步(粘贴 PAT 即连,自动拉取+防抖推送,合并去重);卷子档案也同步,两台设备各批一部分会逐题合并;另有 💾 导出/导入 JSON 备份
 - 双学生档案(KAI / Lorik)、中英双语切换
 
+## ✅ v2.0 AI 老师 + 变式闯关 + 智能错题本(2026-10-14)
+
+设计文档 `docs/DESIGN_V2.0.md`,部署文档 `docs/DEPLOY.md`。
+
+- **🤖 AI 老师(DeepSeek)**:任何一道题做错 → 先给**规则诊断**(离线即时:拿错答比对讲解里的中间数,判 7 类错因:审题不清/没认出套路/数量关系错/计算失误/答非所问/只做了一半/不会下手),再由 DeepSeek 细化错因、给 3~5 步儿童化**解题思路**、套路一句话、下次检查动作,并**画图**
+- **画图**:AI 输出小型 DSL(线段图 `bars` / 数轴路程图 `line` / 几何 `svg`),前端自己渲染成 SVG——风格统一、可打印、文本全部转义;几何 SVG 白名单清洗
+- **🎯 变式闯关**:做错后一键"再来一道同类题";变式再错就再出(第 2 关起自动降一档),直到做对。AI 出的变式过**三道验算闸**:综合算式用自写求值器核对 → 答案合法(正数、≤2 位小数)→ **独立解题复核**(把题干单独再解一遍,答案一致才放行),不过就带着原因重出,3 次不过退回本地生成器。基础综合/图形类以前只能重做原题,现在也有 AI 变式
+- **📕 智能错题本**:错因画像(按类型统计,可点击筛选)、错得最多的套路、顽固错题、闯关链(原题❌→🎯❌→🎯✅)、每题"🤖 AI 讲解";**AI 学情分析**生成问题诊断 + 一周练习计划
+- **🧭 我的套路卡**(模型学堂):本地显示我在这个套路上的错因统计;AI 结合我的错题写口诀、识别信号、解题步骤、我的易错点、检查清单、小例题
+- **🔐 访问门(同 mini2)**:站点部署为 Cloudflare Worker,挂 Cloudflare Access 登录门;DeepSeek 密钥只在服务端 secret,`/api` 再次校验 Access JWT(签名/aud/exp/iss,未配置即拒绝),模型固定、长度上限、**每日调用上限**——外人打不开,也刷不了额度
+- **☁️ 多设备同步重做**:登录后零配置自动同步。服务端 Durable Object 串行执行"云端 ∪ 本地"合并(合并函数 `js/merge.js` 前后端共用,并集/幂等/可交换),彻底消除 Gist 方案的"读-改-写"覆盖竞态;新增删除墓碑(删掉的错题不会被另一台设备复活)、多标签页合并;Gist 后备方案修复 60 秒缓存与"推送前不拉取"问题
+- 测试:`expr / diagnose / diagram / tutor / merge / worker` 六个新测试文件(模拟 DeepSeek 的变式重出与兜底、自签 RSA 的 Access 验签、配额、服务端合并收敛),外加 `tests/mock-deepseek.mjs` 做本地端到端
+
 ## ✅ v1.5 套路体系重构(2026-07-08)
 
 三路调研(库内分类审计 / 经典套路全景 / 教学法实证)驱动的一次体系升级,设计文档 `docs/DESIGN_V1.5.md`:
@@ -78,7 +91,10 @@
 
 ## 🚀 部署
 
-纯静态站,无构建步骤。GitHub Pages 直接发布仓库根目录即可。
+纯静态站,无构建步骤。
+
+- **家庭正式站 wp.kailorik.com**:Cloudflare Worker(静态资源 + `/api`)+ Access 登录门,AI 与自动同步都在这里。步骤见 `docs/DEPLOY.md`。
+- **GitHub Pages 镜像**:直接发布仓库根目录即可;没有 `/api`,AI 自动隐藏(规则诊断 + 出题机变式照常可用),同步用 Gist。
 
 ```bash
 # 本地开发
@@ -94,6 +110,12 @@ python3 -m http.server 5199
 ├─ js/
 │  ├─ app.js             ← 路由 + 顶栏
 │  ├─ store.js           ← localStorage 档案/错题本/间隔复习
+│  ├─ merge.js           ← v2 多设备合并(前后端共用)
+│  ├─ sync.js            ← v2 云同步(/api/sync)+ Gist 后备
+│  ├─ diagnose.js        ← v2 规则错因诊断
+│  ├─ diagram.js         ← v2 线段图/数轴 DSL → SVG
+│  ├─ coach.js / variant.js ← v2 AI 老师面板 / 变式出题
+│  ├─ ai/                ← v2 client(调 /api/ai)/ tutor(提示词+验算流水线)/ expr(安全求值)
 │  ├─ data.js            ← 数据加载
 │  ├─ ui.js
 │  ├─ gen/engine.js      ← 可复现随机数 + 素材池
@@ -104,7 +126,9 @@ python3 -m http.server 5199
 │  ├─ methods.json       ← 15 模型词典 + 四大母套路
 │  └─ examples.json      ← 45 道名师三阶例题
 ├─ assets/storybook/     ← 15 张绘本记忆图
-└─ tests/gen.test.mjs
+├─ worker/               ← v2 Cloudflare Worker:Access 验签 / AI 代理 / Durable Object 同步
+├─ wrangler.jsonc
+└─ tests/                ← node tests/*.test.mjs
 ```
 
 ## 🤝 Credits

@@ -20,6 +20,29 @@
         "5301"
       ],
       "port": 5301
+    },
+    {
+      "name": "mock-deepseek",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "tests/mock-deepseek.mjs",
+        "5399"
+      ],
+      "port": 5399
+    },
+    {
+      "name": "wpc-worker",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": [
+        "-y",
+        "wrangler@4",
+        "dev",
+        "--port",
+        "8787",
+        "--ip",
+        "127.0.0.1"
+      ],
+      "port": 8787
     }
   ]
 }

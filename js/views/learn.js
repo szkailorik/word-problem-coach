@@ -1,8 +1,13 @@
 // 模型学堂:绘本记忆 + 信号/避坑 + 三阶名师例题(逐步展开精讲) + 讲完即测
 import { METHODS, EXAMPLES, familyOf, bankQuestionsByTag } from '../data.js';
 import { GENERATORS, generate } from '../gen/generators.js';
-import { esc, famClass, stemHTML } from '../ui.js';
-import { state } from '../store.js';
+import { esc, famClass, stemHTML, clip } from '../ui.js';
+import { state, profile, getAiNote, setAiNote } from '../store.js';
+import { ERROR_TYPES, countByType } from '../diagnose.js';
+import { findQuestion } from '../qlookup.js';
+import { aiAvailable, chatJSON } from '../ai/client.js';
+import { trickCard } from '../ai/tutor.js';
+import { navToken, stillOn } from '../nav.js';
 
 // 没有名师例题的新模型:用生成器出 3 道固定标准例题(⭐→⭐⭐⭐,种子固定保证每次一样)
 function generatedExamples(tag) {
@@ -17,7 +22,7 @@ function generatedExamples(tag) {
   return out;
 }
 
-export function renderLearn(el, tag) {
+export function renderLearn(el, tag, anchor = '') {
   const m = METHODS[tag];
   if (!m) { el.innerHTML = '<p class="empty">找不到这个模型。</p>'; return; }
   const fam = familyOf(tag);
@@ -57,6 +62,8 @@ export function renderLearn(el, tag) {
     ${examples.length ? `<h2 class="sec-title">${(EXAMPLES[tag] && EXAMPLES[tag].length) ? '🎓 名师三阶例题 <span class="sec-sub">标杆题立模型 → 迁移题换情境 → 压轴题加干扰</span>' : '🎓 三阶标准例题 <span class="sec-sub">认结构 → 换情境 → 加难度,逐步展开讲解</span>'}</h2>
     <div class="examples">${exampleCards}</div>` : ''}
 
+    ${trickBlock(tag)}
+
     <div class="card learn-cta">
       <h3>✅ ${GENERATORS[tag] ? '讲完即测' : '去题库练习'}</h3>
       <p>${GENERATORS[tag] ? '三道例题走完，马上做几道同类新题,检验是不是真的会了。做错会自动进错题本。' : '这一类是直接列式的计算题,不用背模型,去题库按顺序练就行。'}</p>
@@ -66,6 +73,9 @@ export function renderLearn(el, tag) {
       </div>
     </div>
   </div>`;
+
+  bindTrick(el, tag, m);
+  if (anchor === 'trick') el.querySelector('#trick')?.scrollIntoView({ block: 'start' });
 
   // 逐步展开交互
   el.querySelectorAll('[data-reveal]').forEach(btn => {
@@ -116,4 +126,71 @@ function exampleCard(ex, i) {
     </div>
     <button class="btn btn-reveal" data-reveal>👉 开始讲解，一步一步来</button>
   </div>`;
+}
+
+// ── 🧭 我的套路卡:本地错因统计 + AI 结合孩子错题写的套路总结 ──
+function tagErrors(tag) {
+  return Object.values(profile().errorBook).filter(e => e.tag === tag).sort((a, b) => b.lastTs - a.lastTs);
+}
+
+function trickBlock(tag) {
+  const errs = tagErrors(tag);
+  const byType = countByType(errs);
+  const types = Object.entries(byType).filter(([k, n]) => n && k !== 'unknown').sort((a, b) => b[1] - a[1]);
+  const note = getAiNote('trick', tag);
+  return `
+  <div class="card trick-card" id="trick">
+    <div class="ereport-head">
+      <h3>🧭 我的套路卡 <span class="sec-sub">${errs.length ? `这个套路你错过 ${errs.length} 道` : '还没有错题,先看通用要点'}</span></h3>
+      <button class="btn btn-sm ${note ? '' : 'btn-primary'}" id="gen-trick">${note ? '🔄 重新总结' : '✨ 让 AI 老师结合我的错题总结'}</button>
+    </div>
+    ${types.length ? `<div class="trick-mine">我的易错点:${types.map(([k, n]) => `<span class="etype etype-${k}">${ERROR_TYPES[k].icon} ${esc(ERROR_TYPES[k].name)} ×${n}</span>`).join('')}</div>` : ''}
+    ${errs.length ? `<ul class="trick-errs">${errs.slice(0, 3).map(e => `<li>${esc(clip((findQuestion(e.qid) || {}).zh || '', 50))}${e.diag && e.diag.note ? `<small>💬 ${esc(clip(e.diag.note, 50))}</small>` : ''}</li>`).join('')}</ul>` : ''}
+    <div id="trick-body">${note ? trickHTML(note.data, note.ts) : ''}</div>
+  </div>`;
+}
+
+function trickHTML(t, ts) {
+  const list = (title, arr) => arr && arr.length ? `<div><h4>${title}</h4><ul>${arr.map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>` : '';
+  return `
+  <div class="trick-ai">
+    ${t.mantra ? `<div class="trick-mantra">🗣️ ${esc(t.mantra)}</div>` : ''}
+    <div class="trick-grid">
+      ${list('👀 看到什么想到它', t.signals)}
+      ${t.steps.length ? `<div><h4>🪜 解题步骤</h4><ol>${t.steps.map(x => `<li>${esc(x)}</li>`).join('')}</ol></div>` : ''}
+      ${list('⚠️ 我的易错点', t.myPitfalls)}
+      ${list('✅ 做完检查', t.checklist)}
+    </div>
+    ${t.example ? `<div class="trick-example"><b>📝 小例题:</b>${esc(t.example.zh)}<br><b>解法:</b>${esc(t.example.solution)}</div>` : ''}
+    ${ts ? `<div class="coach-quota">🤖 AI 生成于 ${new Date(ts).toLocaleString()}</div>` : ''}
+  </div>`;
+}
+
+function bindTrick(el, tag, m) {
+  const btn = el.querySelector('#gen-trick');
+  if (!btn) return;
+  btn.addEventListener('click', async () => {
+    const body = el.querySelector('#trick-body');
+    const student = state.student, tok = navToken();
+    btn.disabled = true;
+    body.innerHTML = '<div class="coach-loading">⏳ AI 老师正在翻你的错题、总结套路……</div>';
+    if (!(await aiAvailable())) {
+      if (!stillOn(tok)) return;
+      body.innerHTML = '<p class="coach-off">AI 老师需要登录后才能用(家庭网址 wp.kailorik.com)。</p>';
+      btn.disabled = false;
+      return;
+    }
+    const errs = tagErrors(tag).slice(0, 8).map(e => ({ stem: (findQuestion(e.qid) || {}).zh || '', diag: e.diag }));
+    try {
+      const t = await trickCard(m, errs, chatJSON);
+      setAiNote('trick', t, tag, student);
+      if (!stillOn(tok)) return;
+      body.innerHTML = trickHTML(t, Date.now());
+      btn.textContent = '🔄 重新总结';
+    } catch (e) {
+      if (!stillOn(tok)) return;
+      body.innerHTML = `<p class="coach-off">😅 ${esc(e.message)}</p>`;
+    }
+    btn.disabled = false;
+  });
 }

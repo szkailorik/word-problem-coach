@@ -1,10 +1,11 @@
 // 打印中心:筛选/勾选题目 → 每题可附同类变式 → A4 卷面 + 答案页
 // 屏幕上的纸面预览和打印输出完全一致(@media print 只隐藏控制区)。
 import { QUESTIONS, QMAP, METHODS, TAG_LIST, BANKS, BANK_LEVEL } from '../data.js';
-import { generate, regenerate, GENERATORS } from '../gen/generators.js';
+import { generate, GENERATORS } from '../gen/generators.js';
 import { esc } from '../ui.js';
 import { state, nextSeed, dueErrors, weakestTags, saveSheet } from '../store.js';
 import { statusMap, statusIcon } from '../status.js';
+import { findQuestion } from '../qlookup.js';
 import { buildSheetsHTML, todayStr } from '../print-sheet.js';
 
 // 选择集跨渲染保留;打印存档后清空
@@ -132,7 +133,7 @@ export function renderPrint(el) {
       selected = new Map();
       presetTitle = '到期错题卷';
       for (const e of dueErrors().slice(0, 12)) {
-        const q = QMAP.get(e.qid) || regenerate(e.qid);
+        const q = findQuestion(e.qid);
         if (q) selected.set(e.qid, { kind: QMAP.has(e.qid) ? 'bank' : 'gen', q, level: e.level || 1 });
       }
       opts.variants = 2;
@@ -241,7 +242,7 @@ export function preselectForPrint(qids, title = null) {
   presetTitle = title;
   pendingAuto = true;
   for (const qid of qids) {
-    const q = QMAP.get(qid) || regenerate(qid);
+    const q = findQuestion(qid);
     if (q) selected.set(q.id || qid, { kind: QMAP.has(qid) ? 'bank' : 'gen', q, level: q.level || BANK_LEVEL[q.bank] || 1 });
   }
 }

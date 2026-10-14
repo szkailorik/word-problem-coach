@@ -1,7 +1,9 @@
 // 本地状态:双学生档案、练习记录、错题本(莱特纳盒间隔复习)、模型掌握度
 // 数据只存 localStorage,可导出/导入 JSON 备份。
 
-const KEY = 'wpc_state_v1';
+import { SHEET_CAP, QUIZ_CAP, AIQ_CAP, CHAIN_CAP, mergeInto } from './merge.js';
+
+export const KEY = 'wpc_state_v1';
 const DAY = 24 * 60 * 60 * 1000;
 // node 测试环境没有可用的 localStorage(新版 node 有个残缺的全局对象),用内存兜底
 const LS = (typeof localStorage !== 'undefined' && typeof localStorage.setItem === 'function') ? localStorage
@@ -17,6 +19,9 @@ function emptyProfile() {
     lastDrillSeed: {}, // tag -> 已用过的最大 seed,保证刷题不重复
     sheets: [],        // 打印过的卷子档案 { id, code, ts, title, items:[{num,qid,tag,level,variantOf}], grades, gradedAt }
     quizLog: [],       // 辨题快闪记录 { ts, tag, pick, correct }
+    aiQ: {},           // v2.0 AI 变式题 id -> question(可复现、可打印、可同步)
+    aiNotes: { tricks: {} }, // v2.0 AI 学情报告 report:{ts,data} / 套路卡 tricks[tag]:{ts,data}
+    removed: {},       // v2.0 删除墓碑 qid -> ts(让删除跨设备传播)
   };
 }
 
@@ -35,20 +40,37 @@ function load() {
 
 export const state = load();
 
-export function save() {
+// opts.fromSync:同步合并后的落盘,不再触发推送(避免同步→保存→再同步的回环)
+export function save(opts = {}) {
   // 练习日志封顶,防止 localStorage 膨胀
   const p = profile();
   if (p.attempts.length > 2000) p.attempts = p.attempts.slice(-1500);
   LS.setItem(KEY, JSON.stringify(state));
   // 通知云同步(若已连接则防抖推送)
-  try { window.dispatchEvent(new Event('wpc:saved')); } catch (e) { /* node 测试环境无 window */ }
+  try { window.dispatchEvent(new CustomEvent('wpc:saved', { detail: { fromSync: !!opts.fromSync } })); } catch (e) { /* node 测试环境无 window */ }
 }
 
-export function profile() {
-  if (!state.students[state.student]) state.students[state.student] = emptyProfile();
-  const p = state.students[state.student];
+// 同一设备多个标签页:别的标签页写了 localStorage,把它并进本页内存(不回写,下次保存自然带上)
+export function absorbExternal(text) {
+  try {
+    const other = JSON.parse(text);
+    if (other && other.students) mergeInto(state, other);
+    return true;
+  } catch (e) { return false; }
+}
+
+export function profile() { return profileOf(state.student); }
+
+// 指定学生的档案(异步 AI 结果回来时用发起时的学生,中途切学生也不会记错人)
+export function profileOf(name) {
+  if (!state.students[name]) state.students[name] = emptyProfile();
+  const p = state.students[name];
   if (!p.sheets) p.sheets = [];   // v1.4 之前的老数据没有这个字段
   if (!p.quizLog) p.quizLog = []; // v1.5 之前的老数据没有这个字段
+  if (!p.aiQ) p.aiQ = {};         // v2.0
+  if (!p.aiNotes) p.aiNotes = { tricks: {} };
+  if (!p.aiNotes.tricks) p.aiNotes.tricks = {};
+  if (!p.removed) p.removed = {};
   return p;
 }
 
@@ -57,8 +79,13 @@ export function setLang(lang) { state.lang = lang; save(); }
 
 // ── 练习记录 ──────────────────────────────────────────
 // apply* 只改内存不落盘,供批量操作(纸卷批改)复用后统一 save 一次
-function applyAttempt(p, { qid, tag, correct, mode, level = 1 }) {
-  p.attempts.push({ ts: Date.now(), qid, tag, correct, mode, level });
+let lastTs = 0; // 同一毫秒内连续记录也保证 ts 唯一(合并按 ts+qid 去重)
+function uniqTs() { const t = Math.max(Date.now(), lastTs + 1); lastTs = t; return t; }
+
+function applyAttempt(p, { qid, tag, correct, mode, level = 1, ans }) {
+  const rec = { ts: uniqTs(), qid, tag, correct, mode, level };
+  if (ans !== undefined && ans !== null && ans !== '') rec.ans = ans; // v2.0 孩子的作答,诊断用
+  p.attempts.push(rec);
   const m = p.mastery[tag] || (p.mastery[tag] = { seen: 0, correct: 0, streak: 0 });
   m.seen++;
   if (correct) { m.correct++; m.streak++; } else { m.streak = 0; }
@@ -123,10 +150,76 @@ export function allErrors() {
   return Object.values(profile().errorBook).sort((a, b) => b.lastTs - a.lastTs);
 }
 
-export function removeError(qid) { delete profile().errorBook[qid]; save(); }
+export function removeError(qid) {
+  const p = profile();
+  delete p.errorBook[qid];
+  p.removed[qid] = Date.now(); // 墓碑:同步时让其他设备也删掉
+  save();
+}
+
+// ── v2.0 错因诊断 / 变式闯关链 ─────────────────────────
+// diag = { type, note, source:'rule'|'ai', ts }
+export function setDiag(qid, diag, student = state.student) {
+  const e = profileOf(student).errorBook[qid];
+  if (!e) return;
+  e.diag = { ...diag, ts: Date.now() };
+  save();
+}
+
+// 闯关链:原题之后每一道变式的结果。当场闯关不改间隔节奏(当场做对 ≠ 记住了)
+export function pushChain(rootQid, { qid, correct, by }) {
+  const e = profile().errorBook[rootQid];
+  if (!e) return;
+  e.chain = [...(e.chain || []), { qid, correct, by, ts: uniqTs() }].slice(-CHAIN_CAP);
+  if (!correct) e.wrongCount++;
+  e.lastTs = Date.now();
+  save();
+}
+
+// 当前这一轮闯关(最近一次做对之后)连错了几次
+export function chainFails(e) {
+  let n = 0;
+  for (const c of [...(e?.chain || [])].reverse()) { if (c.correct) break; n++; }
+  return n;
+}
+
+// ── v2.0 AI 变式题存档 / AI 笔记 ───────────────────────
+export function saveAIQuestion(q, student = state.student) {
+  const p = profileOf(student);
+  p.aiQ[q.id] = q;
+  const list = Object.values(p.aiQ);
+  if (list.length > AIQ_CAP) {
+    p.aiQ = Object.fromEntries(list.sort((a, b) => (b.ts || 0) - (a.ts || 0)).slice(0, AIQ_CAP).map(x => [x.id, x]));
+  }
+  save();
+}
+
+export function getAIQuestion(id) {
+  for (const s of Object.values(state.students)) if (s.aiQ && s.aiQ[id]) return s.aiQ[id];
+  return null;
+}
+
+export function setAiNote(kind, data, tag = null, student = state.student) {
+  const n = profileOf(student).aiNotes;
+  if (kind === 'trick') n.tricks[tag] = { ts: Date.now(), data };
+  else n.report = { ts: Date.now(), data };
+  save();
+}
+
+export function getAiNote(kind, tag = null) {
+  const n = profile().aiNotes;
+  return kind === 'trick' ? n.tricks[tag] || null : n.report || null;
+}
+
+// 最近一次作答(诊断用)
+export function lastAttemptOf(qid) {
+  const a = profile().attempts;
+  for (let i = a.length - 1; i >= 0; i--) if (a[i].qid === qid) return a[i];
+  return null;
+}
 
 // ── 卷子档案:打印落库 → 批改中心逐题回录 ───────────────
-export const SHEET_CAP = 60; // 只留最近 60 张,防 localStorage 膨胀(sync 合并同用此值)
+export { SHEET_CAP, QUIZ_CAP }; // 只留最近 60 张卷 / 1000 条辨题记录(合并同用此值,定义在 merge.js)
 let sheetSeq = 0; // 同一毫秒内连续存卷也不撞 id
 
 // 卷号印在纸上,家长凭它在批改中心找到这张卷;字符表避开易混的 I/L/O/0/1
@@ -192,11 +285,10 @@ export function gradeSheet(id, marks) {
 }
 
 // ── 辨题快闪:只认题型不解题,单独记账(不进错题本)────
-export const QUIZ_CAP = 1000;
 
 export function recordQuiz({ tag, pick, correct }) {
   const p = profile();
-  p.quizLog.push({ ts: Date.now(), tag, pick, correct });
+  p.quizLog.push({ ts: uniqTs(), tag, pick, correct });
   if (p.quizLog.length > QUIZ_CAP) p.quizLog = p.quizLog.slice(-QUIZ_CAP);
   save();
 }

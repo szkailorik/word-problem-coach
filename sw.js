@@ -1,10 +1,12 @@
 // Service Worker:网络优先 + 缓存兜底,让 iPad/手机离线也能刷题
 // 策略:所有 GET 先走网络(拿到就更新缓存),失败(断网)再用缓存。
 // 这样永远优先最新版,离线时退回上次用过的版本。
-const CACHE = 'wpc-v3';
+const CACHE = 'wpc-v4';
 const CORE = [
   './', 'index.html', 'css/style.css', 'manifest.webmanifest',
   'js/app.js', 'js/data.js', 'js/store.js', 'js/sync.js', 'js/ui.js', 'js/status.js', 'js/print-sheet.js',
+  'js/merge.js', 'js/nav.js', 'js/qlookup.js', 'js/diagnose.js', 'js/diagram.js', 'js/coach.js', 'js/variant.js',
+  'js/ai/client.js', 'js/ai/tutor.js', 'js/ai/expr.js',
   'js/gen/engine.js', 'js/gen/generators.js', 'js/gen/classic-a.js', 'js/gen/classic-b.js',
   'js/views/home.js', 'js/views/learn.js', 'js/views/drill.js', 'js/views/bank.js', 'js/views/errors.js', 'js/views/log.js', 'js/views/print.js', 'js/views/grade.js', 'js/views/quiz.js',
   'data/questions.json', 'data/methods.json', 'data/examples.json',
@@ -24,6 +26,7 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
   const req = e.request;
   if (req.method !== 'GET' || !req.url.startsWith(self.location.origin)) return; // GitHub API 等直连
+  if (new URL(req.url).pathname.includes('/api/')) return; // 登录/同步/AI 接口永远直连,不进缓存
   e.respondWith(
     fetch(req).then(res => {
       if (res.ok) {
